@@ -1,0 +1,14 @@
+# build
+backend/target/
+frontend/node_modules/
+frontend/dist/
+# local config & runtime files
+backend/local.properties
+backend/uploads/
+*.log
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db

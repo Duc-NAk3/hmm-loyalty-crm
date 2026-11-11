@@ -1,0 +1,37 @@
+# Cấu hình chạy local. Mật khẩu CSDL đặt trong file backend/local.properties (không đưa lên git), ví dụ:
+#   DB_PASSWORD=matkhau_postgres_cua_ban
+spring:
+  application:
+    name: hmm-loyalty
+  config:
+    import: optional:file:./local.properties
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:hmm_loyalty}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+  flyway:
+    locations: classpath:db/migration
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  jackson:
+    time-zone: Asia/Ho_Chi_Minh
+
+server:
+  port: ${PORT:8080}
+
+app:
+  jwt-secret: ${JWT_SECRET:hmm-demo-secret-key-please-change-0123456789abcdef}
+  jwt-hours: 12
+  otp-store: memory          # memory | redis (profile docker)
+  seed-demo-data: true       # tạo dữ liệu mẫu khi CSDL còn trống
+  cors-origins: http://localhost:5173
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  level:
+    vn.sofitech.hmm: INFO
