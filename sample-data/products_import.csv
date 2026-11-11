@@ -1,0 +1,9 @@
+sku,name,unit,category_code,vat_rate,barcodes,promo_restricted,point_excluded,price
+RAU101,Bông cải xanh Đà Lạt 500g,Gói,RAU,5,8939001001018,false,false,29000
+RAU102,Ớt chuông đỏ 300g,Hộp,RAU,5,8939001001025,false,false,35000
+DOUONG101,Nước dừa tươi đóng hộp 330ml,Hộp,DOUONG,8,8939001001032|8939001001049,false,false,15000
+BANH101,Bánh gạo vị tảo biển 150g,Gói,BANH,8,8939001001056,false,false,26000
+SUATE101,Sữa bột trẻ em 0-6 tháng 400g,Lon,SUATE,5,8939001001063,true,false,265000
+DICHVU101,Thẻ nạp điện thoại 200.000đ,Thẻ,DICHVU,0,8939001001070,false,true,200000
+RAU001,Cải ngọt Đà Lạt 500g,Gói,RAU,5,,false,false,19000
+KHO999,Mặt hàng sai ngành hàng,Gói,KHONGCO,5,8939001001087,false,false,10000

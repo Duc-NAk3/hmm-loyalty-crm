@@ -16,6 +16,7 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -79,7 +80,8 @@ public class CustomerImportService {
             if (!idx.containsKey(required))
                 throw ApiException.badRequest("FORMAT", "File không đúng định dạng " + v.label() + ": thiếu cột " + required);
 
-        DateTimeFormatter dobFmt = DateTimeFormatter.ofPattern(v.dobPattern());
+        // STRICT: ngày không tồn tại (31/02) là lỗi, không tự làm tròn về cuối tháng
+        DateTimeFormatter dobFmt = DateTimeFormatter.ofPattern(v.dobPattern().replace("yyyy", "uuuu")).withResolverStyle(ResolverStyle.STRICT);
         int total = 0, created = 0, merged = 0, errors = 0;
         for (int rowNo = 2; rowNo <= lines.size(); rowNo++) {
             String line = lines.get(rowNo - 1);

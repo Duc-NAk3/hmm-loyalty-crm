@@ -183,8 +183,12 @@ public class CatalogService {
                     Long catId = jdbc.sql("SELECT category_id FROM catalog.categories WHERE code = :c").param("c", c[3].trim())
                             .query(Long.class).optional().orElseThrow(() -> new IllegalArgumentException("ngành hàng " + c[3] + " không tồn tại"));
                     Long existing = jdbc.sql("SELECT product_id FROM catalog.products WHERE sku = :s").param("s", c[0].trim()).query(Long.class).optional().orElse(null);
+                    // Cột mã vạch để trống khi cập nhật mặt hàng có sẵn: giữ nguyên mã vạch cũ
+                    List<String> barcodes = c[5].isBlank() && existing != null
+                            ? jdbc.sql("SELECT barcode FROM catalog.product_barcodes WHERE product_id = :id").param("id", existing).query(String.class).list()
+                            : Arrays.asList(c[5].split("\\|"));
                     ProductInput p = new ProductInput(c[0], c[1], c[2], catId, new BigDecimal(c[4].trim()),
-                            Boolean.parseBoolean(c[6].trim()), Boolean.parseBoolean(c[7].trim()), Arrays.asList(c[5].split("\\|")), "ACTIVE");
+                            Boolean.parseBoolean(c[6].trim()), Boolean.parseBoolean(c[7].trim()), barcodes, "ACTIVE");
                     long id = saveProduct(existing, p, userId);
                     if (c.length > 8 && !c[8].isBlank()) {
                         long price = Long.parseLong(c[8].trim());
