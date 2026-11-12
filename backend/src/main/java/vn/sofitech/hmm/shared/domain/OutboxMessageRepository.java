@@ -20,12 +20,15 @@ public interface OutboxMessageRepository extends JpaRepository<OutboxMessage, Lo
             """)
     int markPendingSent(@Param("now") OffsetDateTime now);
 
-    /** Tin SMS mới nhất, lọc theo SĐT trong payload JSON (hàm jsonb_extract_path_text của PostgreSQL). */
+    /** Tin SMS mới nhất. */
+    @Query("select m from OutboxMessage m where m.messageType like 'SMS%' order by m.id desc")
+    List<OutboxMessage> findLatestSms(Pageable page);
+
+    /** Tin SMS mới nhất gửi tới một SĐT (lọc trong payload JSON bằng hàm jsonb_extract_path_text của PostgreSQL). */
     @Query("""
             select m from OutboxMessage m
-            where m.messageType like 'SMS%'
-              and (:phone is null or function('jsonb_extract_path_text', m.payload, 'phone') = :phone)
+            where m.messageType like 'SMS%' and function('jsonb_extract_path_text', m.payload, 'phone') = :phone
             order by m.id desc
             """)
-    List<OutboxMessage> findLatestSms(@Param("phone") String phone, Pageable page);
+    List<OutboxMessage> findLatestSmsByPhone(@Param("phone") String phone, Pageable page);
 }

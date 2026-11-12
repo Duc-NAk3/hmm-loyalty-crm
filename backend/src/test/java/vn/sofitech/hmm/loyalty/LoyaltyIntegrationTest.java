@@ -1,19 +1,29 @@
 package vn.sofitech.hmm.loyalty;
 
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.support.TransactionTemplate;
+import vn.sofitech.hmm.admin.domain.*;
+import vn.sofitech.hmm.customer.CustomerFacade;
+import vn.sofitech.hmm.loyalty.LoyaltyFacade.RedemptionHeld;
+import vn.sofitech.hmm.loyalty.LoyaltyFacade.RedemptionRequested;
+import vn.sofitech.hmm.loyalty.domain.*;
+import vn.sofitech.hmm.loyalty.service.LedgerService;
+import vn.sofitech.hmm.loyalty.service.LoyaltyConfigService;
+import vn.sofitech.hmm.pos.domain.SalesTransaction;
+import vn.sofitech.hmm.pos.domain.SalesTransactionRepository;
 import vn.sofitech.hmm.shared.ApiException;
+import vn.sofitech.hmm.shared.domain.OutboxMessageRepository;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
@@ -21,7 +31,6 @@ import java.sql.DriverManager;
 import java.sql.Statement;
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -30,9 +39,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * Kiểm tra tích hợp với PostgreSQL thật: sổ cái điểm (FR-33), giữ / trả / đổi điểm theo FIFO và luồng OTP (FR-20, FR-30).
- * Dùng database riêng {@code hmm_loyalty_test}, được tạo lại mỗi lần chạy; không đụng dữ liệu demo.
- * Tự bỏ qua nếu máy không kết nối được PostgreSQL (mật khẩu đọc từ local.properties hoặc biến DB_PASSWORD).
+ * Kiểm tra tích hợp với PostgreSQL thật qua ORM (JPA): sổ cái điểm (FR-33), giữ / trả / đổi điểm FIFO và luồng OTP (FR-20, FR-30).
+ * Dùng database riêng {@code hmm_loyalty_test}, tạo lại mỗi lần chạy; tự bỏ qua nếu không kết nối được PostgreSQL.
  */
 @SpringBootTest(properties = "app.seed-demo-data=false")
 @EnabledIf("vn.sofitech.hmm.loyalty.LoyaltyIntegrationTest#databaseAvailable")
@@ -40,11 +48,23 @@ class LoyaltyIntegrationTest {
 
     static final String TEST_DB = "hmm_loyalty_test";
 
-    @Autowired JdbcClient jdbc;
     @Autowired TransactionTemplate tx;
+    @Autowired EntityManager em;
     @Autowired LedgerService ledger;
-    @Autowired RedemptionService redemptions;
+    @Autowired LoyaltyFacade loyalty;
     @Autowired LoyaltyConfigService config;
+    @Autowired CustomerFacade customers;
+    @Autowired StoreRepository stores;
+    @Autowired PosTerminalRepository terminals;
+    @Autowired RoleRepository roles;
+    @Autowired AppUserRepository users;
+    @Autowired TierRepository tiers;
+    @Autowired LoyaltyPolicyRepository policies;
+    @Autowired PointLotRepository lots;
+    @Autowired PointLedgerRepository ledgers;
+    @Autowired PointRedemptionRepository redemptions;
+    @Autowired SalesTransactionRepository transactions;
+    @Autowired OutboxMessageRepository outbox;
 
     // ---------------------------------------------------------------- chuẩn bị CSDL test
     static String password() {
@@ -64,9 +84,9 @@ class LoyaltyIntegrationTest {
         return System.getenv().getOrDefault("DB_HOST", "localhost") + ":" + System.getenv().getOrDefault("DB_PORT", "5432");
     }
 
-    /** Điều kiện chạy test: kết nối được PostgreSQL; đồng thời tạo lại database test trống. */
     static Boolean available;
 
+    /** Điều kiện chạy test: kết nối được PostgreSQL; đồng thời tạo lại database test trống (một lần). */
     static synchronized boolean databaseAvailable() {
         if (available != null) return available;
         available = false;
@@ -88,25 +108,27 @@ class LoyaltyIntegrationTest {
     }
 
     long customerId;
+    long terminalId;
+    long cashierId;
+    long txn1, txn2, txn3;
 
     @BeforeEach
     void setUp() {
         tx.executeWithoutResult(s -> {
-            jdbc.sql("TRUNCATE admin.stores, admin.roles, loyalty.tiers, loyalty.loyalty_policies, shared.outbox_messages RESTART IDENTITY CASCADE").update();
-            jdbc.sql("INSERT INTO admin.stores (store_id, store_code, name, status) VALUES (1, 'HM001', 'Test', 'ACTIVE')").update();
-            jdbc.sql("INSERT INTO admin.pos_terminals (terminal_id, store_id, terminal_code, status) VALUES (1, 1, 'HM001-Q01', 'ACTIVE')").update();
-            jdbc.sql("INSERT INTO admin.roles (role_id, code, name) VALUES (1, 'CASHIER', 'Thu ngân')").update();
-            jdbc.sql("INSERT INTO admin.app_users (user_id, username, password_hash, full_name, role_id, store_id) VALUES (1, 'tn', 'x', 'Thu ngân', 1, 1)").update();
-            jdbc.sql("INSERT INTO loyalty.tiers VALUES ('MEMBER', 'Thành viên', 0, 1.00, NULL), ('SILVER', 'Bạc', 3000000, 1.20, NULL)").update();
-            jdbc.sql("""
-                    INSERT INTO loyalty.loyalty_policies (version, earn_unit_vnd, point_value_vnd, min_redeem_points, max_redeem_pct, expiry_months,
-                        hold_minutes, effective_from, status) VALUES (1, 10000, 100, 50, 50, 12, 15, now() - interval '1 day', 'APPROVED')
-                    """).update();
-            jdbc.sql("INSERT INTO pos.sales_transactions (transaction_id, receipt_no, store_id, txn_type, status, source, txn_time, net_amount) VALUES (1, 'R1', 1, 'SALE', 'COMPLETED', 'POS', now(), 0), (2, 'R2', 1, 'SALE', 'COMPLETED', 'POS', now(), 0), (3, 'R3', 1, 'SALE', 'COMPLETED', 'POS', now(), 0)").update();
-            customerId = jdbc.sql("""
-                    INSERT INTO customer.customers (member_code, phone, full_name, status, tier_code, created_at)
-                    VALUES ('HM90000001', '0901112222', 'Khách Test', 'UNVERIFIED', 'MEMBER', now()) RETURNING customer_id
-                    """).query(Long.class).single();
+            // TRUNCATE bỏ qua trigger chỉ-ghi-thêm của sổ cái; chỉ dùng để dọn dữ liệu test
+            em.createNativeQuery("TRUNCATE admin.stores, admin.roles, loyalty.tiers, loyalty.loyalty_policies, shared.outbox_messages CASCADE")
+                    .executeUpdate();
+            Store store = stores.save(new Store("HM001", "Test", null, null, null));
+            terminalId = terminals.save(new PosTerminal(store, "HM001-Q01", OffsetDateTime.now())).getId();
+            cashierId = users.save(new AppUser("tn", "x", "Thu ngân", null, roles.save(new Role("CASHIER", "Thu ngân")), store)).getId();
+            tiers.save(new Tier("MEMBER", "Thành viên", 0, new BigDecimal("1.00"), null));
+            tiers.save(new Tier("SILVER", "Bạc", 3_000_000, new BigDecimal("1.20"), null));
+            policies.save(new LoyaltyPolicy(1, 10_000, 100, 50, 50, 12, 15, OffsetDateTime.now().minusDays(1), null));
+            txn1 = transactions.save(SalesTransaction.sale("R1", store.getId(), terminalId, null, null, null, OffsetDateTime.now())).getId();
+            txn2 = transactions.save(SalesTransaction.sale("R2", store.getId(), terminalId, null, null, null, OffsetDateTime.now())).getId();
+            txn3 = transactions.save(SalesTransaction.sale("R3", store.getId(), terminalId, null, null, null, OffsetDateTime.now())).getId();
+            customerId = customers.create(new CustomerFacade.NewCustomer("0901112222", "Khách Test", null, null, null, store.getId(),
+                    "UNVERIFIED", null));
         });
     }
 
@@ -114,121 +136,128 @@ class LoyaltyIntegrationTest {
         return config.currentPolicy();
     }
 
-    int ledgerSum() {
-        return jdbc.sql("SELECT COALESCE(sum(points), 0) FROM loyalty.point_ledgers WHERE customer_id = :c").param("c", customerId).query(Integer.class).single();
+    int balance() {
+        return customers.findById(customerId).orElseThrow().pointBalance();
     }
 
-    long newRedemption(int points) {
-        return jdbc.sql("INSERT INTO loyalty.point_redemptions (customer_id, terminal_id, points, amount_vnd, status, created_at) VALUES (:c, 1, :p, :a, 'QUOTED', now()) RETURNING redemption_id")
-                .param("c", customerId).param("p", points).param("a", points * 100L).query(Long.class).single();
+    long ledgerSum() {
+        return ledgers.sumPoints(customerId);
+    }
+
+    PointRedemption newRedemption(int points) {
+        return redemptions.save(new PointRedemption(customerId, terminalId, points, points * 100L, OffsetDateTime.now()));
     }
 
     // ---------------------------------------------------------------- sổ cái và FIFO
     @Test
     @DisplayName("FR-33: tích điểm tạo lô điểm và bút toán EARN; số dư = tổng sổ cái")
     void earnCreatesLotAndLedger() {
-        tx.executeWithoutResult(s -> ledger.earn(customerId, 1, 120, OffsetDateTime.now(), policy(), 1L));
-        assertThat(ledger.balance(customerId)).isEqualTo(120).isEqualTo(ledgerSum());
-        Map<String, Object> lot = jdbc.sql("SELECT points_earned, points_remaining, expires_at > now() + interval '10 months' AS ok FROM loyalty.point_lots WHERE customer_id = :c")
-                .param("c", customerId).query().singleRow();
-        assertThat(lot).containsEntry("points_earned", 120).containsEntry("points_remaining", 120).containsEntry("ok", true);
+        tx.executeWithoutResult(s -> ledger.earn(customerId, txn1, 120, OffsetDateTime.now(), policy(), cashierId));
+        assertThat((long) balance()).isEqualTo(120).isEqualTo(ledgerSum());
+        PointLot lot = lots.findByCustomerIdOrderByEarnedAt(customerId).getFirst();
+        assertThat(lot.getPointsEarned()).isEqualTo(120);
+        assertThat(lot.getPointsRemaining()).isEqualTo(120);
+        assertThat(lot.getExpiresAt()).isAfter(OffsetDateTime.now().plusMonths(10));
     }
 
     @Test
     @DisplayName("FR-30 + BRL-10: giữ điểm rồi đổi điểm trừ lô cũ trước (FIFO)")
     void redeemConsumesOldestLotsFirst() {
-        long rid = newRedemption(150);
         tx.executeWithoutResult(s -> {
-            ledger.earn(customerId, 1, 100, OffsetDateTime.now().minusDays(30), policy(), 1L);
-            ledger.earn(customerId, 2, 80, OffsetDateTime.now().minusDays(5), policy(), 1L);
+            ledger.earn(customerId, txn1, 100, OffsetDateTime.now().minusDays(30), policy(), cashierId);
+            ledger.earn(customerId, txn2, 80, OffsetDateTime.now().minusDays(5), policy(), cashierId);
         });
-        tx.executeWithoutResult(s -> assertThat(ledger.hold(customerId, rid, 150, policy(), 1L)).isEqualTo(30));
-        tx.executeWithoutResult(s -> assertThat(ledger.redeem(customerId, rid, 3, 150, policy(), 1L)).isEqualTo(30));
-
-        List<Integer> remaining = jdbc.sql("SELECT points_remaining FROM loyalty.point_lots WHERE customer_id = :c ORDER BY earned_at")
-                .param("c", customerId).query(Integer.class).list();
-        assertThat(remaining).containsExactly(0, 30);
-        List<String> entries = jdbc.sql("SELECT entry_type || ':' || points FROM loyalty.point_ledgers WHERE customer_id = :c ORDER BY ledger_id")
-                .param("c", customerId).query(String.class).list();
+        tx.executeWithoutResult(s -> {
+            PointRedemption r = newRedemption(150);
+            assertThat(ledger.hold(customerId, r, 150, policy(), cashierId)).isEqualTo(30);
+            assertThat(ledger.redeem(customerId, r, txn3, 150, policy(), cashierId)).isEqualTo(30);
+        });
+        assertThat(lots.findByCustomerIdOrderByEarnedAt(customerId)).extracting(PointLot::getPointsRemaining).containsExactly(0, 30);
+        List<String> entries = ledgers.findByCustomerIdOrderById(customerId).stream()
+                .map(g -> g.getEntryType() + ":" + g.getPoints()).toList();
         assertThat(entries).containsExactly("EARN:100", "EARN:80", "HOLD:-150", "RELEASE:150", "REDEEM:-100", "REDEEM:-50");
-        assertThat(ledgerSum()).isEqualTo(30).isEqualTo(ledger.balance(customerId));
+        assertThat(ledgerSum()).isEqualTo(30).isEqualTo(balance());
     }
 
     @Test
     @DisplayName("Không giữ được điểm khi số dư không đủ; trả điểm (RELEASE) khôi phục số dư")
     void holdAndRelease() {
-        long rid = newRedemption(100);
-        tx.executeWithoutResult(s -> ledger.earn(customerId, 1, 60, OffsetDateTime.now(), policy(), 1L));
-        assertThatThrownBy(() -> tx.executeWithoutResult(s -> ledger.hold(customerId, rid, 100, policy(), 1L)))
+        tx.executeWithoutResult(s -> ledger.earn(customerId, txn1, 60, OffsetDateTime.now(), policy(), cashierId));
+        assertThatThrownBy(() -> tx.executeWithoutResult(s -> ledger.hold(customerId, newRedemption(100), 100, policy(), cashierId)))
                 .isInstanceOf(ApiException.class).hasMessageContaining("không đủ");
         tx.executeWithoutResult(s -> {
-            ledger.hold(customerId, rid, 60, policy(), 1L);
-            ledger.release(customerId, rid, 60, policy(), 1L);
+            PointRedemption r = newRedemption(60);
+            ledger.hold(customerId, r, 60, policy(), cashierId);
+            ledger.release(customerId, r, 60, policy(), cashierId);
         });
-        assertThat(ledger.balance(customerId)).isEqualTo(60).isEqualTo(ledgerSum());
+        assertThat((long) balance()).isEqualTo(60).isEqualTo(ledgerSum());
     }
 
     @Test
     @DisplayName("FR-33: sổ cái chỉ ghi thêm – CSDL chặn UPDATE và DELETE")
     void ledgerIsAppendOnly() {
-        tx.executeWithoutResult(s -> ledger.earn(customerId, 1, 10, OffsetDateTime.now(), policy(), 1L));
-        assertThatThrownBy(() -> jdbc.sql("UPDATE loyalty.point_ledgers SET points = 999").update()).isInstanceOf(DataAccessException.class);
-        assertThatThrownBy(() -> jdbc.sql("DELETE FROM loyalty.point_ledgers").update()).isInstanceOf(DataAccessException.class);
+        tx.executeWithoutResult(s -> ledger.earn(customerId, txn1, 10, OffsetDateTime.now(), policy(), cashierId));
+        assertThatThrownBy(() -> tx.executeWithoutResult(s -> em.createNativeQuery("UPDATE loyalty.point_ledgers SET points = 999").executeUpdate()))
+                .isInstanceOf(RuntimeException.class);
+        assertThatThrownBy(() -> tx.executeWithoutResult(s -> em.createNativeQuery("DELETE FROM loyalty.point_ledgers").executeUpdate()))
+                .isInstanceOf(RuntimeException.class);
     }
 
-    // ---------------------------------------------------------------- luồng OTP
+    // ---------------------------------------------------------------- luồng OTP (qua LoyaltyFacade)
     String lastOtp() {
-        String text = jdbc.sql("SELECT payload->>'text' FROM shared.outbox_messages WHERE message_type = 'SMS_OTP' ORDER BY outbox_id DESC LIMIT 1")
-                .query(String.class).single();
-        Matcher m = Pattern.compile("(\\d{6})").matcher(text);
+        String payload = outbox.findAll().stream().filter(m -> m.getMessageType().equals("SMS_OTP"))
+                .max((a, b) -> Long.compare(a.getId(), b.getId())).orElseThrow().getPayload();
+        Matcher m = Pattern.compile("(\\d{6})").matcher(payload);
         assertThat(m.find()).isTrue();
         return m.group(1);
+    }
+
+    String wrongOtp() {
+        return "000000".equals(lastOtp()) ? "111111" : "000000";
     }
 
     @Test
     @DisplayName("FR-30 + FR-20: OTP đúng → giữ điểm (HELD) và hồ sơ chuyển Đã xác thực; hủy → trả điểm")
     void otpFlowHoldsPointsAndVerifiesPhone() {
-        tx.executeWithoutResult(s -> ledger.earn(customerId, 1, 500, OffsetDateTime.now(), policy(), 1L));
-        Map<String, Object> req = redemptions.request(customerId, 1, 200, 400_000);
-        long rid = ((Number) req.get("redemptionId")).longValue();
-        assertThat(req.get("status")).isEqualTo("QUOTED");
+        tx.executeWithoutResult(s -> ledger.earn(customerId, txn1, 500, OffsetDateTime.now(), policy(), cashierId));
+        RedemptionRequested req = loyalty.requestRedemption(customerId, terminalId, 200, 400_000);
+        assertThat(req.status()).isEqualTo("QUOTED");
 
-        assertThatThrownBy(() -> redemptions.verifyOtp(rid, 1, "000000".equals(lastOtp()) ? "111111" : "000000", 1))
+        assertThatThrownBy(() -> loyalty.verifyOtp(req.redemptionId(), terminalId, wrongOtp(), cashierId))
                 .isInstanceOf(ApiException.class).hasMessageContaining("không đúng");
-        Map<String, Object> held = redemptions.verifyOtp(rid, 1, lastOtp(), 1);
-        assertThat(held).containsEntry("status", "HELD").containsEntry("phoneVerified", true);
-        assertThat(ledger.balance(customerId)).isEqualTo(300);
-        assertThat(jdbc.sql("SELECT status FROM customer.customers WHERE customer_id = :c").param("c", customerId).query(String.class).single())
-                .isEqualTo("VERIFIED");
+        RedemptionHeld held = loyalty.verifyOtp(req.redemptionId(), terminalId, lastOtp(), cashierId);
+        assertThat(held.status()).isEqualTo("HELD");
+        assertThat(held.phoneVerified()).isTrue();
+        assertThat(balance()).isEqualTo(300);
+        assertThat(customers.findById(customerId).orElseThrow().status()).isEqualTo("VERIFIED");
 
-        redemptions.cancel(rid, 1, 1);
-        assertThat(ledger.balance(customerId)).isEqualTo(500).isEqualTo(ledgerSum());
-        assertThat(jdbc.sql("SELECT status FROM loyalty.point_redemptions WHERE redemption_id = :r").param("r", rid).query(String.class).single())
-                .isEqualTo("RELEASED");
+        loyalty.cancelRedemption(req.redemptionId(), terminalId, cashierId);
+        assertThat((long) balance()).isEqualTo(500).isEqualTo(ledgerSum());
+        assertThat(redemptions.findById(req.redemptionId()).orElseThrow().getStatus()).isEqualTo(PointRedemption.Status.RELEASED);
     }
 
     @Test
     @DisplayName("BRL-09: sai OTP 3 lần → hủy yêu cầu đổi điểm, không trừ điểm")
     void threeWrongOtpsCancelRequest() {
-        tx.executeWithoutResult(s -> ledger.earn(customerId, 1, 500, OffsetDateTime.now(), policy(), 1L));
-        long rid = ((Number) redemptions.request(customerId, 1, 100, 400_000).get("redemptionId")).longValue();
-        String wrong = "000000".equals(lastOtp()) ? "111111" : "000000";
-        assertThatThrownBy(() -> redemptions.verifyOtp(rid, 1, wrong, 1)).hasMessageContaining("không đúng");
-        assertThatThrownBy(() -> redemptions.verifyOtp(rid, 1, wrong, 1)).hasMessageContaining("không đúng");
-        assertThatThrownBy(() -> redemptions.verifyOtp(rid, 1, wrong, 1)).hasMessageContaining("quá số lần");
-        assertThat(jdbc.sql("SELECT status FROM loyalty.point_redemptions WHERE redemption_id = :r").param("r", rid).query(String.class).single())
-                .isEqualTo("RELEASED");
-        assertThat(ledger.balance(customerId)).isEqualTo(500);
+        tx.executeWithoutResult(s -> ledger.earn(customerId, txn1, 500, OffsetDateTime.now(), policy(), cashierId));
+        long id = loyalty.requestRedemption(customerId, terminalId, 100, 400_000).redemptionId();
+        String wrong = wrongOtp();
+        assertThatThrownBy(() -> loyalty.verifyOtp(id, terminalId, wrong, cashierId)).hasMessageContaining("không đúng");
+        assertThatThrownBy(() -> loyalty.verifyOtp(id, terminalId, wrong, cashierId)).hasMessageContaining("không đúng");
+        assertThatThrownBy(() -> loyalty.verifyOtp(id, terminalId, wrong, cashierId)).hasMessageContaining("quá số lần");
+        assertThat(redemptions.findById(id).orElseThrow().getStatus()).isEqualTo(PointRedemption.Status.RELEASED);
+        assertThat(balance()).isEqualTo(500);
     }
 
     @Test
-    @DisplayName("Đổi điểm bị từ chối khi tài khoản đang tạm khóa đổi điểm hoặc vượt mức tối đa")
+    @DisplayName("Đổi điểm bị từ chối khi vượt mức tối đa hoặc tài khoản đang tạm khóa đổi điểm")
     void requestRejectedWhenLockedOrOverLimit() {
-        tx.executeWithoutResult(s -> ledger.earn(customerId, 1, 500, OffsetDateTime.now(), policy(), 1L));
-        assertThatThrownBy(() -> redemptions.request(customerId, 1, 300, 40_000)) // 50% × 40.000đ = 20.000đ = 200 điểm tối đa
+        tx.executeWithoutResult(s -> ledger.earn(customerId, txn1, 500, OffsetDateTime.now(), policy(), cashierId));
+        assertThatThrownBy(() -> loyalty.requestRedemption(customerId, terminalId, 300, 40_000)) // 50% × 40.000đ = 200 điểm tối đa
                 .isInstanceOf(ApiException.class).hasMessageContaining("đến 200");
-        jdbc.sql("UPDATE customer.customers SET redeem_locked = true WHERE customer_id = :c").param("c", customerId).update();
-        assertThatThrownBy(() -> redemptions.request(customerId, 1, 100, 400_000))
+        tx.executeWithoutResult(s -> em.createQuery("update Customer c set c.redeemLocked = true where c.id = :id")
+                .setParameter("id", customerId).executeUpdate());
+        assertThatThrownBy(() -> loyalty.requestRedemption(customerId, terminalId, 100, 400_000))
                 .isInstanceOf(ApiException.class).hasMessageContaining("tạm khóa");
     }
 }

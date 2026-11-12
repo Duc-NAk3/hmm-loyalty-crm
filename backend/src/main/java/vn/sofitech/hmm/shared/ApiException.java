@@ -2,7 +2,7 @@ package vn.sofitech.hmm.shared;
 
 import org.springframework.http.HttpStatus;
 
-/** Lỗi nghiệp vụ trả về cho client với thông báo tiếng Việt. */
+/** Lỗi nghiệp vụ trả về cho client với thông báo tiếng Việt: { code, message }. */
 public class ApiException extends RuntimeException {
 
     private final HttpStatus status;
@@ -18,8 +18,8 @@ public class ApiException extends RuntimeException {
         return new ApiException(HttpStatus.BAD_REQUEST, code, message);
     }
 
-    public static ApiException notFound(String message) {
-        return new ApiException(HttpStatus.NOT_FOUND, "NOT_FOUND", message);
+    public static NotFoundException notFound(String message) {
+        return new NotFoundException(message);
     }
 
     public static ApiException conflict(String code, String message) {
@@ -36,5 +36,12 @@ public class ApiException extends RuntimeException {
 
     public String code() {
         return code;
+    }
+
+    /** Không tìm thấy đối tượng nghiệp vụ (HTTP 404). */
+    public static class NotFoundException extends ApiException {
+        public NotFoundException(String message) {
+            super(HttpStatus.NOT_FOUND, "NOT_FOUND", message);
+        }
     }
 }
