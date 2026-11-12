@@ -8,8 +8,11 @@ import PortalLogin from './portal/PortalLogin'
 import Customer360 from './portal/Customer360'
 import Customers from './portal/Customers'
 import Dashboard from './portal/Dashboard'
-import Placeholder from './portal/Placeholder'
-import { PORTAL_MENU } from './portal/menu'
+import Migration from './portal/Migration'
+import Products from './portal/Products'
+import SmsInbox from './portal/SmsInbox'
+import Tiers from './portal/Tiers'
+import Users from './portal/Users'
 
 export default function App() {
   return (
@@ -27,10 +30,11 @@ export default function App() {
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="customers" element={<Customers />} />
         <Route path="customers/:id" element={<Customer360 />} />
-        {/* Chức năng chưa làm: trang chờ */}
-        {PORTAL_MENU.filter((m) => m.step !== 'B8').map((m) => (
-          <Route key={m.key} path={m.key} element={<Placeholder title={m.label} step={m.step} />} />
-        ))}
+        <Route path="products" element={<Products />} />
+        <Route path="tiers" element={<Tiers />} />
+        <Route path="migration" element={<Migration />} />
+        <Route path="users" element={<Users />} />
+        <Route path="sms" element={<SmsInbox />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -92,6 +92,6 @@ Không làm: bán khi mất mạng (FR-09), hóa đơn điện tử, voucher, ph
   - Phiên POS và phiên Portal lưu riêng trong localStorage (`hmm.pos.session`, `hmm.portal.session`).
   - Quầy của máy lưu ở `hmm.pos.terminal`.
 - **Gọi API:** qua `src/shared/api.ts`; hàm này tự gắn token theo khu vực và báo lỗi bằng thông báo tiếng Việt của backend.
-- **Menu Portal theo vai trò:** khai báo trong `src/portal/menu.tsx`; route khai báo trong `App.tsx`. Mục chưa làm hiện trang `Placeholder`.
+- **Menu Portal theo vai trò:** khai báo trong `src/portal/menu.tsx`; route khai báo trong `App.tsx`.
 - **Biểu đồ (Recharts):** đọc skill `dataviz` trước khi vẽ; màu và kiểu chung ở `src/shared/chart.ts` (Thành viên luôn xanh `#2a78d6`, Vãng lai luôn cam `#eb6834`; một chuỗi một màu; cột ≤ 24px, bo 4px đầu cột; không hai trục Y).
 - **Lưu ý TypeScript:** tsconfig bật `verbatimModuleSyntax` và `erasableSyntaxOnly`, nên import kiểu phải dùng `import type`, và không dùng `enum`.
