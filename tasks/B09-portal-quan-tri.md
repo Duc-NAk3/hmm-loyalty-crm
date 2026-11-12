@@ -1,4 +1,4 @@
-# B9 – Portal: mặt hàng & giá, chuyển đổi dữ liệu, người dùng, hộp thư SMS · ⬜ Chưa làm
+# B9 – Portal: mặt hàng & giá, chuyển đổi dữ liệu, người dùng, hộp thư SMS · ⬜ Chưa làm (làm tiếp theo)
 
 **FR:** FR-11 (mặt hàng, nhập CSV), FR-12 (giá có duyệt), FR-58/59/60 (chuyển đổi dữ liệu), FR-65 (người dùng), FR-31 (nút chạy xét hạng).
 

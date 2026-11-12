@@ -1,4 +1,4 @@
-# B8 – Portal: Dashboard KPI, khách hàng, Customer 360 · ✅ Xong (commit `__HASH__`)
+# B8 – Portal: Dashboard KPI, khách hàng, Customer 360 · ✅ Xong (commit `1853564`)
 
 **FR:** FR-51 (Dashboard), FR-22 (Customer 360), FR-18 (tìm khách trên Portal).
 
