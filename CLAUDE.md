@@ -51,5 +51,12 @@ Không làm: bán khi mất mạng (FR-09), hóa đơn điện tử, voucher, ph
   - 0987654321: chưa có trong dữ liệu, dùng demo đăng ký mới.
   - SĐT `0869xxxxxx`: dành cho file CSV chuyển đổi mẫu.
 
-## Frontend (`frontend/`, đang làm)
-Vite + React + TypeScript + Ant Design + Recharts; một app gồm `/pos` (thu ngân) và `/portal`; proxy `/api` → 8080.
+## Frontend (`frontend/`)
+- **Công nghệ:** Vite 8 + React 19 + TypeScript 7 + Ant Design 6 (locale vi_VN) + Recharts.
+- **Lệnh:** `npm run dev` (cổng 5173, proxy `/api` → 8080), `npm run build` (kiểm tra kiểu).
+- **Khu vực:** một app gồm `/pos` (thu ngân) và `/portal`.
+  - Phiên POS và phiên Portal lưu riêng trong localStorage (`hmm.pos.session`, `hmm.portal.session`).
+  - Quầy của máy lưu ở `hmm.pos.terminal`.
+- **Gọi API:** qua `src/shared/api.ts`; hàm này tự gắn token theo khu vực và báo lỗi bằng thông báo tiếng Việt của backend.
+- **Menu Portal theo vai trò:** khai báo trong `src/portal/menu.tsx`. Mục chưa làm hiện trang `Placeholder`.
+- **Lưu ý TypeScript:** tsconfig bật `verbatimModuleSyntax` và `erasableSyntaxOnly`, nên import kiểu phải dùng `import type`, và không dùng `enum`.

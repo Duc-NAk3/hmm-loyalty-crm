@@ -6,6 +6,10 @@ Phạm vi: 19 yêu cầu chức năng có đánh dấu Demo trong tài liệu SR
 | Thành phần | Công nghệ |
 |---|---|
 | `backend/` | Spring Boot 4 (Java 21), PostgreSQL, Flyway, Spring Security (JWT), Spring Modulith (kiểm tra ranh giới module) |
-| `frontend/` | React + Vite (POS và Web Portal) – đang làm |
+| `frontend/` | React 19 + Vite + TypeScript + Ant Design (POS và Web Portal) |
 
-> Đang phát triển. Hướng dẫn cài đặt, tài khoản demo và kịch bản demo sẽ được bổ sung khi hoàn thiện.
+## Chạy local (tạm thời – bản đầy đủ ở bước README)
+1. **Backend:** tạo file `backend/local.properties` với dòng `DB_PASSWORD=<mật khẩu postgres>` và tạo database `hmm_loyalty`. Sau đó chạy `cd backend` rồi `.\mvnw.cmd spring-boot:run` → http://localhost:8080 (lần đầu tự tạo dữ liệu mẫu).
+2. **Frontend:** `cd frontend`, chạy `npm install` (lần đầu), rồi `npm run dev` → http://localhost:5173.
+
+> Đang phát triển. Tài khoản demo và kịch bản demo sẽ được bổ sung khi hoàn thiện.
