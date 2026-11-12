@@ -66,6 +66,21 @@ public class Shift {
         this.confirmedBy = confirmedBy;
     }
 
+    /** Dữ liệu mẫu: ca trong quá khứ, đã đóng; số tiền đối chiếu ghi sau bằng {@link #reconcile}. */
+    public static Shift historical(Long terminalId, Long cashierId, OffsetDateTime openedAt, long openingCash, OffsetDateTime closedAt) {
+        Shift s = new Shift(terminalId, cashierId, openedAt, openingCash);
+        s.closedAt = closedAt;
+        return s;
+    }
+
+    /** Dữ liệu mẫu: ghi kết quả đối chiếu tiền mặt của ca đã đóng. */
+    public void reconcile(long cashSales, long countedCash, Long confirmedBy) {
+        this.expectedCash = openingCash + cashSales;
+        this.countedCash = countedCash;
+        this.cashDifference = countedCash - expectedCash;
+        this.confirmedBy = confirmedBy;
+    }
+
     public boolean isOpen() {
         return closedAt == null;
     }

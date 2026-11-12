@@ -1,5 +1,5 @@
 HƯỚNG DẪN TEST THANH TOÁN TRÊN GIAO DIỆN POS
-Hoa Mai Mart – Loyalty CRM (bản demo) · cập nhật sau bước B6
+Hoa Mai Mart – Loyalty CRM (bản demo) · cập nhật sau bước B6.B (ORM)
 =====================================================================
 
 Giá trong file lấy từ dữ liệu mẫu ngày 12/11/2026 (gọi API POS của từng cửa hàng).
@@ -198,59 +198,81 @@ c) Câu lệnh kiểm tra sau khi test (pgAdmin hoặc psql):
 
 5.3 Luồng dữ liệu trong code (từ nút bấm tới CSDL)
 ---------------------------------------------------------------------
-Dự án không dùng JPA Repository. Mỗi Service viết SQL trực tiếp bằng Spring JdbcClient, nên Service vừa là tầng nghiệp vụ vừa đảm nhiệm vai trò repository.
-Cấu trúc bảng do Flyway tạo từ file migration.
+Backend dùng ORM: Spring Data JPA (Hibernate). Mỗi module chia lớp theo cùng một mẫu:
+  Controller (web/) → Facade / Service (service/) → Repository (domain/) → Entity (domain/) → bảng CSDL.
+- Module khác chỉ được gọi qua Facade ở gốc package: CatalogFacade, CustomerFacade, LoyaltyFacade, AdminFacade.
+  Spring Modulith kiểm tra quy tắc này trong ModularityTest.
+- API trả DTO (Java record, tên trường camelCase), không trả entity.
+- Cấu trúc bảng do Flyway tạo từ file migration; Hibernate chỉ kiểm tra entity khớp bảng (ddl-auto = validate).
 
 [FRONTEND – frontend/src]
  1. pos/PaymentModal.tsx      Nút "Hoàn tất hóa đơn" gọi onConfirm(cashTendered).
- 2. pos/SaleScreen.tsx        Hàm checkout(): dựng body { terminalId, shiftId, receiptNo, lines[], cashTendered }.
+ 2. pos/SaleScreen.tsx        Hàm checkout() dựng body { terminalId, shiftId, receiptNo, lines[], cashTendered }.
                               receiptNo sinh bởi newReceiptNo() theo dạng mã quầy-ngày-giờ.
- 3. shared/api.ts             api(): gắn header "Authorization: Bearer <token POS>" (lấy từ shared/session.ts),
-                              gửi fetch POST /api/pos/sales, đổi lỗi {code, message} thành ApiError.
+ 3. shared/api.ts             Hàm api():
+                              - gắn header "Authorization: Bearer <token POS>" (lấy từ shared/session.ts);
+                              - gửi fetch POST /api/pos/sales;
+                              - đổi lỗi {code, message} thành ApiError.
  4. vite.config.ts            Proxy /api → http://localhost:8080. Chỉ dùng khi chạy dev; khi chạy Docker thì nginx làm việc này.
- 5. Nhận kết quả → pos/ReceiptView.tsx hiển thị hóa đơn; PosShell.tsx gọi lại loadShift() để cập nhật số hóa đơn của ca.
+ 5. Nhận ReceiptView (JSON)   pos/ReceiptView.tsx hiển thị hóa đơn; PosShell.tsx gọi lại loadShift() để cập nhật số hóa đơn của ca.
 
 [BACKEND – backend/src/main/java/vn/sofitech/hmm]
- 6. admin/SecurityConfig.java       Bộ lọc Spring Security kiểm tra JWT (HS256).
-                                    /api/pos/** chỉ cho vai trò CASHIER, STORE_MANAGER; sai thì trả 401/403.
- 7. pos/PosController.java          @PostMapping("/sales") checkout(): nhận SaleRequest; lấy người dùng từ JWT qua admin/CurrentUser.java (uid, role, storeId).
- 8. pos/SaleService.java            checkout() có @Transactional – toàn bộ các bước sau nằm trong một giao dịch:
-    8.1 Chống trùng: receipt_no đã tồn tại thì trả lại hóa đơn cũ (receipt()).
-    8.2 ShiftService.checkTerminal(): quầy phải thuộc cửa hàng của thu ngân.
-        ShiftService.current(): ca phải đang mở và đúng shiftId.
-    8.3 price() → catalog/CatalogService.sellableByIds(): đọc catalog.products, categories, product_barcodes, product_prices.
-        Lấy giá ĐANG hiệu lực, đã duyệt; giá riêng cửa hàng ưu tiên hơn giá toàn chuỗi (câu SQL CURRENT_PRICE).
-        Tính line_amount; đánh dấu point_eligible.
-        Giá luôn do backend tính lại, không tin giá gửi từ máy quầy.
-    8.4 Nếu có customerId: customer/CustomerService.findById() (từ B7).
-    8.5 INSERT pos.sales_transactions, rồi INSERT pos.transaction_lines cho từng dòng.
-    8.6 Nếu có redemptionId (từ B7): loyalty/RedemptionService.confirm() → loyalty/LedgerService.redeem();
-        INSERT pos.payments (POINTS); kiểm tra không vượt 50% giá trị hàng được đổi điểm.
-    8.7 Kiểm tra tiền khách đưa ≥ phần phải trả; INSERT pos.payments (CASH).
-    8.8 Nếu có thành viên (từ B7):
-        - loyalty/LoyaltyConfigService: lấy chính sách điểm và hệ số hạng;
-        - loyalty/PointCalculator.earnedPoints(): floor(floor(giá trị tính điểm / 10.000) × hệ số hạng);
-        - loyalty/LedgerService.earn(): INSERT point_lots + point_ledgers, UPDATE customers.point_balance;
-        - loyalty/TierService.afterSale(): cộng spend_12m, lên hạng, ghi tier_histories,
-          gọi shared/OutboxService.enqueueSms() ghi tin SMS_TIER.
-    8.9 UPDATE pos.sales_transactions: điền eligible_amount, points_earned, points_redeemed.
-    8.10 receipt(): đọc lại hóa đơn (JOIN stores, pos_terminals, app_users, customers, tiers), dòng hàng, thanh toán → trả JSON.
+ 6. admin/config/SecurityConfig.java
+      Bộ lọc Spring Security kiểm tra JWT (HS256).
+      /api/pos/** chỉ cho vai trò CASHIER, STORE_MANAGER; sai thì trả 401/403.
+ 7. pos/web/PosController.java  (Controller)
+      @PostMapping("/sales") checkout() nhận PosDtos.SaleRequest.
+      Người dùng lấy từ JWT qua admin/CurrentUser.java (uid, role, storeId).
+ 8. pos/service/SaleService.java  (Service, @Transactional – mọi bước dưới đây nằm trong một giao dịch)
+    8.1 Chống trùng: SalesTransactionRepository.findByReceiptNo(); nếu đã có thì trả lại hóa đơn cũ.
+    8.2 ShiftService.checkTerminal() → AdminFacade.findActiveTerminal(): quầy phải thuộc cửa hàng của thu ngân.
+        ShiftService.openShift() → ShiftRepository: ca phải đang mở và đúng shiftId.
+    8.3 Định giá: price() → CatalogFacade.sellableByIds() (cài đặt ở catalog/service/CatalogService).
+        - ProductRepository (entity Product, Category, ProductBarcode) và ProductPriceRepository.findEffective() (JPQL)
+          lấy giá ĐANG hiệu lực, đã duyệt; giá riêng cửa hàng ưu tiên hơn giá toàn chuỗi.
+        - Giá luôn do backend tính lại, không tin giá gửi từ máy quầy.
+    8.4 Nếu có customerId: CustomerFacade.findById() (từ B7).
+    8.5 Tạo entity SalesTransaction (aggregate): SalesTransaction.sale(...), addLine() cho từng dòng
+        rồi SalesTransactionRepository.saveAndFlush().
+        → INSERT pos.sales_transactions + pos.transaction_lines (cascade).
+        Ghi ngay để sổ cái điểm tham chiếu được transaction_id.
+    8.6 Nếu có redemptionId (từ B7): LoyaltyFacade.confirmRedemption()
+        → RedemptionService.confirm(): entity PointRedemption.confirm() tự kiểm tra trạng thái HELD và hạn giữ điểm;
+        → LedgerService.redeem(): PointLotRepository.findOpenLotsForUpdate() (FIFO, khóa dòng), PointLot.consume(),
+          ghi PointLedger (RELEASE, REDEEM), CustomerFacade.adjustPointBalance().
+        Thêm khoản thanh toán POINTS: txn.addPayment(POINTS); kiểm tra không vượt 50% giá trị hàng được đổi điểm.
+    8.7 Kiểm tra tiền khách đưa ≥ phần phải trả; txn.addPayment(CASH).
+    8.8 Nếu có thành viên (từ B7): LoyaltyFacade.earnForSale()
+        - LoyaltyConfigService: chính sách điểm và hệ số hạng;
+        - PointCalculator.earnedPoints(): floor(floor(giá trị tính điểm / 10.000) × hệ số hạng);
+        - LedgerService.earn(): lưu PointLot + PointLedger (EARN), CustomerFacade.adjustPointBalance()
+          (khóa dòng customers bằng PESSIMISTIC_WRITE);
+        - TierService.afterSale(): CustomerFacade.addSpend(), lên hạng thì lưu TierHistory và phát SmsRequestedEvent
+          (Observer) → shared/SmsOutbox ghi tin SMS_TIER vào outbox trong cùng giao dịch.
+        Sau đó txn.applyLoyalty(): điền eligible_amount, points_earned, points_redeemed.
+    8.9 Kết thúc giao dịch: Hibernate flush các thay đổi (INSERT payments, UPDATE sales_transactions, customers…) rồi commit.
+    8.10 receipt(): dựng PosDtos.ReceiptView từ entity và các Facade (AdminFacade: cửa hàng, quầy, thu ngân;
+         CustomerFacade: thành viên; CatalogFacade.labels(): tên hàng; LoyaltyFacade.tierName()).
  9. shared/GlobalExceptionHandler.java
-        ApiException → HTTP 400/403/404/409 kèm {code, message} tiếng Việt.
-        Có lỗi thì giao dịch rollback, không ghi gì.
+      ApiException → HTTP 400/403/404/409 kèm {code, message} tiếng Việt.
+      Vi phạm ràng buộc CSDL → 409. Có lỗi thì giao dịch rollback, không ghi gì.
 10. Tác vụ nền (không chạy trong lúc bấm thanh toán):
-        - shared/OutboxService.mockSend(): 3 giây/lần đánh dấu SMS đã gửi;
-        - loyalty/RedemptionService.expireHolds(): 30 giây/lần trả điểm giữ quá 15 phút;
-        - loyalty/TierService.dailyReview(): 2 giờ sáng xét hạng.
+      - shared/SmsOutbox.mockSend(): 3 giây/lần đánh dấu SMS đã gửi (JPQL update hàng loạt);
+      - loyalty/service/RedemptionService.expireHolds(): 30 giây/lần trả điểm giữ quá 15 phút;
+      - loyalty/service/TierService.dailyReview(): 2 giờ sáng xét hạng.
 
 [CÁC FILE CẤU HÌNH LIÊN QUAN]
- backend/pom.xml                                    Thư viện: Spring Boot 4.0.9, starter-jdbc, security + oauth2-resource-server (JWT), flyway, postgresql, springdoc, spring-modulith (test)
- backend/src/main/resources/application.yml         Kết nối CSDL (DB_HOST/DB_NAME/DB_USER/DB_PASSWORD), cổng 8080, khóa JWT, thời hạn token 12 giờ, nơi lưu OTP (memory), bật dữ liệu mẫu, CORS
+ backend/pom.xml                                    Thư viện: Spring Boot 4.0.9, spring-boot-starter-data-jpa (Hibernate 7), Lombok,
+                                                    security + oauth2-resource-server (JWT), flyway, postgresql, springdoc, spring-modulith (test)
+ backend/src/main/resources/application.yml         Kết nối CSDL (DB_HOST/DB_NAME/DB_USER/DB_PASSWORD), cổng 8080;
+                                                    cấu hình JPA (validate, batch 500, múi giờ, pooled-lo);
+                                                    khóa JWT, thời hạn token 12 giờ, nơi lưu OTP (memory), bật dữ liệu mẫu, CORS
  backend/local.properties                           Mật khẩu PostgreSQL của máy bạn (DB_PASSWORD=...), không đưa lên git
  backend/src/main/resources/application-docker.yml  Cấu hình khi chạy Docker (Redis lưu OTP) – dùng ở B11
- backend/src/main/resources/db/migration/V1__schema.sql   Flyway tạo 26 bảng, các index, trigger chặn sửa sổ cái, ràng buộc 1 ca mở / quầy
- backend/src/main/java/vn/sofitech/hmm/admin/SecurityConfig.java      Phân quyền URL, bộ mã hóa/giải mã JWT, bcrypt, CORS
- backend/src/main/java/vn/sofitech/hmm/HmmLoyaltyApplication.java     Điểm khởi động, bật @EnableScheduling, múi giờ Asia/Ho_Chi_Minh
+ backend/src/main/resources/db/migration/V1__schema.sql    Flyway tạo 26 bảng, các index, trigger chặn sửa sổ cái, ràng buộc 1 ca mở / quầy
+ backend/src/main/resources/db/migration/V2__jpa_sequences.sql   Sequence bước 50 để Hibernate cấp ID theo khối và insert theo batch
+ backend/src/main/java/vn/sofitech/hmm/admin/config/SecurityConfig.java   Phân quyền URL, bộ mã hóa/giải mã JWT, bcrypt, CORS
+ backend/src/main/java/vn/sofitech/hmm/HmmLoyaltyApplication.java         Điểm khởi động, bật @EnableScheduling, múi giờ Asia/Ho_Chi_Minh
  frontend/vite.config.ts                            Cổng 5173, proxy /api → 8080
  frontend/package.json                              Thư viện frontend: React 19, Ant Design 6, react-router, dayjs, recharts
  frontend/src/main.tsx                              Giao diện tiếng Việt (vi_VN), màu chủ đạo, Router

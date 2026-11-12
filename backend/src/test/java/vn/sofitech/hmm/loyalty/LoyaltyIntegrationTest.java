@@ -6,10 +6,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.support.TransactionTemplate;
+import vn.sofitech.hmm.PostgresTestBase;
 import vn.sofitech.hmm.admin.domain.*;
 import vn.sofitech.hmm.customer.CustomerFacade;
 import vn.sofitech.hmm.loyalty.LoyaltyFacade.RedemptionHeld;
@@ -22,16 +20,9 @@ import vn.sofitech.hmm.pos.domain.SalesTransactionRepository;
 import vn.sofitech.hmm.shared.ApiException;
 import vn.sofitech.hmm.shared.domain.OutboxMessageRepository;
 
-import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.Statement;
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,13 +31,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Kiểm tra tích hợp với PostgreSQL thật qua ORM (JPA): sổ cái điểm (FR-33), giữ / trả / đổi điểm FIFO và luồng OTP (FR-20, FR-30).
- * Dùng database riêng {@code hmm_loyalty_test}, tạo lại mỗi lần chạy; tự bỏ qua nếu không kết nối được PostgreSQL.
  */
-@SpringBootTest(properties = "app.seed-demo-data=false")
-@EnabledIf("vn.sofitech.hmm.loyalty.LoyaltyIntegrationTest#databaseAvailable")
-class LoyaltyIntegrationTest {
-
-    static final String TEST_DB = "hmm_loyalty_test";
+@EnabledIf("vn.sofitech.hmm.PostgresTestBase#databaseAvailable")
+class LoyaltyIntegrationTest extends PostgresTestBase {
 
     @Autowired TransactionTemplate tx;
     @Autowired EntityManager em;
@@ -65,47 +52,6 @@ class LoyaltyIntegrationTest {
     @Autowired PointRedemptionRepository redemptions;
     @Autowired SalesTransactionRepository transactions;
     @Autowired OutboxMessageRepository outbox;
-
-    // ---------------------------------------------------------------- chuẩn bị CSDL test
-    static String password() {
-        String env = System.getenv("DB_PASSWORD");
-        if (env != null) return env;
-        try {
-            Properties p = new Properties();
-            Path f = Path.of("local.properties");
-            if (Files.exists(f)) try (var r = Files.newBufferedReader(f)) { p.load(r); }
-            return p.getProperty("DB_PASSWORD", "postgres");
-        } catch (IOException e) {
-            return "postgres";
-        }
-    }
-
-    static String host() {
-        return System.getenv().getOrDefault("DB_HOST", "localhost") + ":" + System.getenv().getOrDefault("DB_PORT", "5432");
-    }
-
-    static Boolean available;
-
-    /** Điều kiện chạy test: kết nối được PostgreSQL; đồng thời tạo lại database test trống (một lần). */
-    static synchronized boolean databaseAvailable() {
-        if (available != null) return available;
-        available = false;
-        try (Connection c = DriverManager.getConnection("jdbc:postgresql://" + host() + "/postgres",
-                System.getenv().getOrDefault("DB_USER", "postgres"), password()); Statement st = c.createStatement()) {
-            st.execute("DROP DATABASE IF EXISTS " + TEST_DB + " WITH (FORCE)");
-            st.execute("CREATE DATABASE " + TEST_DB + " ENCODING 'UTF8' TEMPLATE template0");
-            return available = true;
-        } catch (Exception e) {
-            System.out.println("Bỏ qua LoyaltyIntegrationTest: không kết nối được PostgreSQL – " + e.getMessage());
-            return false;
-        }
-    }
-
-    @DynamicPropertySource
-    static void datasource(DynamicPropertyRegistry r) {
-        r.add("spring.datasource.url", () -> "jdbc:postgresql://" + host() + "/" + TEST_DB);
-        r.add("spring.datasource.password", LoyaltyIntegrationTest::password);
-    }
 
     long customerId;
     long terminalId;
