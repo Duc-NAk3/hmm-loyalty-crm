@@ -3,6 +3,24 @@
 Demo cho **19 FR có đánh dấu Demo** trong SRS: FR-01–04, 11, 12, 18–20, 22, 28, 30, 31, 33, 51, 58–60, 65.
 Không làm: bán khi mất mạng (FR-09), hóa đơn điện tử, voucher, phân khúc. OTP và SMS là giả lập.
 
+## Bắt đầu / tiếp tục công việc (đọc trước tiên)
+1. **`tasks/README.md`:** bảng trạng thái các bước B1–B11 (✅ / ⬜), commit tương ứng, nguồn thông tin. Bước ⬜ đầu tiên là việc tiếp theo; file của bước đó có sẵn API backend, file cần sửa và cách kiểm tra.
+2. **Xong một bước:**
+   - Đổi trạng thái thành ✅ kèm mã commit trong file bước và trong `tasks/README.md`.
+   - Commit cùng code, push `Dev`.
+   - Dừng lại báo người dùng trước khi sang bước sau (người dùng muốn làm từng bước).
+3. **Kế hoạch tổng thể đã duyệt:** `C:\Users\DUC\.claude\plans\scalable-foraging-garden.md`. Bộ nhớ dài hạn: `C:\Users\DUC\.claude\projects\D--Job-SofiTech\memory\`.
+4. **Tài liệu nghiệp vụ** (SRS, ERD, Architecture) và quy ước viết tài liệu Word: xem `../CLAUDE.md` ở gốc thư mục bài.
+
+## Lưu ý môi trường (Windows)
+- **Ghi file:** dùng công cụ Write/Edit. Heredoc nhiều file trong Bash hay bị lỗi; muốn sửa hàng loạt thì viết script `node -e`.
+- **Server để thử:**
+  - Dùng preview `backend` (cổng 8080) và `frontend` (cổng 5173), cấu hình trong `D:\Job\SofiTech\.claude\launch.json` (đặt `autoPort: false`).
+  - Dừng backend xong thì đợi vài giây cho cổng 8080 được giải phóng rồi mới khởi động lại.
+  - Backend nhận request trước khi seeder chạy xong; xem log có dòng "Demo data seeded".
+- **Lệnh git:** cảnh báo "LF will be replaced by CRLF" là bình thường. Gõ `git add -A 2>/dev/null` cho gọn.
+- **Console frontend:** cảnh báo "Accessing element.ref was removed in React 19" đến từ Ant Design, bỏ qua được.
+
 ## Git – bắt buộc
 - Remote: GitHub private `Duc-NAk3/hmm-loyalty-crm`. `gh` CLI đã đăng nhập.
 - Làm trên nhánh **`Dev`**. Mỗi bước nhỏ là một commit, push `origin Dev` ngay sau khi kiểm tra xong.
