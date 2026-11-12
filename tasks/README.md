@@ -17,8 +17,8 @@ Mỗi bước là một file `Bxx-*.md`. Trạng thái ghi ở dòng đầu mỗ
 | [B5](B05-khung-frontend.md) | Khung frontend, đăng nhập, menu theo vai trò | ✅ | `de2019a` |
 | [B6](B06-pos-ban-hang.md) | POS: ca, bán hàng, thanh toán tiền mặt | ✅ | `70a5d39`, `eeedf59` |
 | [B6.B](B06B-orm-design-pattern.md) | Chuyển sang ORM (JPA) + design pattern | ✅ | `76f5744`, `182f93f`, `3bbdf39`, `cb0d614` |
-| [B7](B07-pos-thanh-vien-doi-diem.md) | POS: thành viên, đăng ký, đổi điểm OTP | ⬜ **làm tiếp theo** | |
-| [B8](B08-portal-dashboard-360.md) | Portal: Dashboard KPI, khách hàng, Customer 360 | ⬜ | |
+| [B7](B07-pos-thanh-vien-doi-diem.md) | POS: thành viên, đăng ký, đổi điểm OTP | ✅ | `3035ae3` |
+| [B8](B08-portal-dashboard-360.md) | Portal: Dashboard KPI, khách hàng, Customer 360 | ⬜ **làm tiếp theo** | |
 | [B9](B09-portal-quan-tri.md) | Portal: mặt hàng & giá, chuyển đổi dữ liệu, người dùng, hộp thư SMS, xét hạng | ⬜ | |
 | [B10](B10-readme-kich-ban-demo.md) | README đầy đủ + kịch bản demo ~10 phút | ⬜ | |
 | [B11](B11-docker.md) | Docker compose + hướng dẫn Docker | ⬜ | |

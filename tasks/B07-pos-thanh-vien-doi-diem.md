@@ -1,4 +1,4 @@
-# B7 – POS: thành viên và đổi điểm · ✅ Xong (commit `__HASH__`)
+# B7 – POS: thành viên và đổi điểm · ✅ Xong (commit `3035ae3`)
 
 **FR:** FR-03 (gắn thành viên), FR-18 (tra cứu), FR-19 (đăng ký nhanh), FR-20 (xác thực SĐT bằng OTP lần đầu), FR-30 (đổi điểm), FR-04 (thanh toán tiền mặt và điểm).
 

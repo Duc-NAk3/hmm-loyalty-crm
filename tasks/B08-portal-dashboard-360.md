@@ -1,4 +1,4 @@
-# B8 – Portal: Dashboard KPI, khách hàng, Customer 360 · ⬜ Chưa làm
+# B8 – Portal: Dashboard KPI, khách hàng, Customer 360 · ⬜ Chưa làm (làm tiếp theo)
 
 **FR:** FR-51 (Dashboard), FR-22 (Customer 360), FR-18 (tìm khách).
 
