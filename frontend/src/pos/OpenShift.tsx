@@ -13,7 +13,7 @@ export default function OpenShift({ terminal, onOpened }: { terminal: Terminal; 
     setLoading(true)
     setError(undefined)
     try {
-      onOpened(await api<Shift>('/api/pos/shifts/open', { body: { terminalId: terminal.terminal_id, openingCash: v.openingCash } }))
+      onOpened(await api<Shift>('/api/pos/shifts/open', { body: { terminalId: terminal.terminalId, openingCash: v.openingCash } }))
     } catch (e) {
       setError(errorMessage(e))
     } finally {
@@ -26,7 +26,7 @@ export default function OpenShift({ terminal, onOpened }: { terminal: Terminal; 
       <Card style={{ width: '100%', maxWidth: 420 }}>
         <Typography.Title level={4} style={{ marginTop: 0 }}>Mở ca bán hàng</Typography.Title>
         <Typography.Paragraph type="secondary">
-          Quầy {terminal.terminal_code} chưa có ca đang mở. Đếm tiền trong két và nhập số tiền đầu ca.
+          Quầy {terminal.terminalCode} chưa có ca đang mở. Đếm tiền trong két và nhập số tiền đầu ca.
         </Typography.Paragraph>
         {error && <Alert type="error" showIcon title={error} style={{ marginBottom: 16 }} />}
         <Form layout="vertical" initialValues={{ openingCash: 2_000_000 }} onFinish={open} size="large">

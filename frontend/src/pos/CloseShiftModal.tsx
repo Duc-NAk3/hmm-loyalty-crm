@@ -17,7 +17,7 @@ export default function CloseShiftModal({ shift, open, onCancel, onClosed }: {
   onCancel: () => void
   onClosed: () => void
 }) {
-  const expected = shift.opening_cash + shift.cash_sales
+  const expected = shift.openingCash + shift.cashSales
   const [counted, setCounted] = useState<number | null>(expected)
   const [result, setResult] = useState<CloseResult>()
   const [error, setError] = useState<string>()
@@ -28,7 +28,7 @@ export default function CloseShiftModal({ shift, open, onCancel, onClosed }: {
     setLoading(true)
     setError(undefined)
     try {
-      setResult(await api<CloseResult>(`/api/pos/shifts/${shift.shift_id}/close`, { body: { countedCash: counted ?? 0 } }))
+      setResult(await api<CloseResult>(`/api/pos/shifts/${shift.shiftId}/close`, { body: { countedCash: counted ?? 0 } }))
     } catch (e) {
       setError(errorMessage(e))
     } finally {
@@ -49,10 +49,10 @@ export default function CloseShiftModal({ shift, open, onCancel, onClosed }: {
     >
       {error && <Alert type="error" showIcon title={error} style={{ marginBottom: 12 }} />}
       <Descriptions column={1} size="small" bordered>
-        <Descriptions.Item label="Mở ca lúc">{dateTime(shift.opened_at)}</Descriptions.Item>
-        <Descriptions.Item label="Số hóa đơn">{shift.receipt_count}</Descriptions.Item>
-        <Descriptions.Item label="Tiền đầu ca">{vnd(shift.opening_cash)}</Descriptions.Item>
-        <Descriptions.Item label="Tiền mặt bán được">{vnd(shift.cash_sales)}</Descriptions.Item>
+        <Descriptions.Item label="Mở ca lúc">{dateTime(shift.openedAt)}</Descriptions.Item>
+        <Descriptions.Item label="Số hóa đơn">{shift.receiptCount}</Descriptions.Item>
+        <Descriptions.Item label="Tiền đầu ca">{vnd(shift.openingCash)}</Descriptions.Item>
+        <Descriptions.Item label="Tiền mặt bán được">{vnd(shift.cashSales)}</Descriptions.Item>
         <Descriptions.Item label="Tiền mặt theo hệ thống"><b>{vnd(expected)}</b></Descriptions.Item>
       </Descriptions>
       {!result ? (

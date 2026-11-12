@@ -9,7 +9,7 @@ import { type Terminal, getTerminal, setTerminal } from '../shared/session'
 export default function TerminalSetup() {
   const nav = useNavigate()
   const [terminals, setTerminals] = useState<Terminal[]>([])
-  const [selected, setSelected] = useState<string | undefined>(getTerminal()?.terminal_code)
+  const [selected, setSelected] = useState<string | undefined>(getTerminal()?.terminalCode)
   const [error, setError] = useState<string>()
 
   useEffect(() => {
@@ -17,7 +17,7 @@ export default function TerminalSetup() {
   }, [])
 
   const save = () => {
-    const t = terminals.find((x) => x.terminal_code === selected)
+    const t = terminals.find((x) => x.terminalCode === selected)
     if (!t) return
     setTerminal(t)
     nav('/pos/login')
@@ -37,7 +37,7 @@ export default function TerminalSetup() {
           placeholder="Chọn quầy"
           value={selected}
           onChange={setSelected}
-          options={terminals.map((t) => ({ value: t.terminal_code, label: `${t.terminal_code} · ${t.store_name}` }))}
+          options={terminals.map((t) => ({ value: t.terminalCode, label: `${t.terminalCode} · ${t.storeName}` }))}
         />
         <Button type="primary" size="large" block style={{ marginTop: 16 }} disabled={!selected} onClick={save}>
           Lưu quầy

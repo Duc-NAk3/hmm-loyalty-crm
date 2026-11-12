@@ -23,8 +23,8 @@ export default function PosShell() {
   const loadShift = useCallback(async () => {
     if (!terminal || !session) return
     try {
-      const s = await api<Shift | Record<string, never>>(`/api/pos/shifts/current?terminalId=${terminal.terminal_id}`)
-      setShift('shift_id' in s ? (s as Shift) : null)
+      // 204 (không có nội dung) = quầy chưa có ca đang mở
+      setShift(await api<Shift | null>(`/api/pos/shifts/current?terminalId=${terminal.terminalId}`))
     } catch (e) {
       setError(errorMessage(e))
     }
@@ -45,11 +45,11 @@ export default function PosShell() {
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Layout.Header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingInline: 16, gap: 12 }}>
-        <Brand light subtitle={`${terminal.terminal_code} · ${terminal.store_name}`} />
+        <Brand light subtitle={`${terminal.terminalCode} · ${terminal.storeName}`} />
         <Space wrap>
           {shift && (
             <Typography.Text style={{ color: '#f5e6c8' }}>
-              Ca mở lúc {dateTime(shift.opened_at)} · {shift.receipt_count} hóa đơn
+              Ca mở lúc {dateTime(shift.openedAt)} · {shift.receiptCount} hóa đơn
             </Typography.Text>
           )}
           <Typography.Text style={{ color: '#fff' }}>{session.user.fullName}</Typography.Text>

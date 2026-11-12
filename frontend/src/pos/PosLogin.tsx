@@ -12,7 +12,7 @@ export default function PosLogin() {
   if (!terminal) return <Navigate to="/pos/setup" replace />
 
   const login = async (v: LoginValues) => {
-    const res = await api<Session>('/api/auth/login', { area: 'pos', body: { ...v, terminalCode: terminal.terminal_code } })
+    const res = await api<Session>('/api/auth/login', { area: 'pos', body: { ...v, terminalCode: terminal.terminalCode } })
     setSession('pos', { token: res.token, user: res.user })
     nav('/pos')
   }
@@ -20,9 +20,9 @@ export default function PosLogin() {
   return (
     <div className="center-page">
       <Card style={{ width: '100%', maxWidth: 400 }}>
-        <Brand subtitle={`POS · ${terminal.terminal_code}`} />
+        <Brand subtitle={`POS · ${terminal.terminalCode}`} />
         <Typography.Paragraph type="secondary" style={{ margin: '12px 0 20px' }}>
-          {terminal.store_name}
+          {terminal.storeName}
         </Typography.Paragraph>
         <LoginForm onSubmit={login} />
         <Button type="link" block style={{ marginTop: 8 }} onClick={() => nav('/pos/setup')}>

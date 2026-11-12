@@ -18,14 +18,14 @@ export interface CartLine {
 }
 
 export interface Shift {
-  shift_id: number
-  terminal_id: number
-  cashier_id: number
-  cashier_name: string
-  opened_at: string
-  opening_cash: number
-  receipt_count: number
-  cash_sales: number
+  shiftId: number
+  terminalId: number
+  cashierId: number
+  cashierName: string
+  openedAt: string
+  openingCash: number
+  receiptCount: number
+  cashSales: number
 }
 
 export interface ReceiptLine {
@@ -33,30 +33,30 @@ export interface ReceiptLine {
   name: string
   unit: string
   quantity: number
-  unit_price: number
-  line_amount: number
-  point_eligible: boolean
+  unitPrice: number
+  lineAmount: number
+  pointEligible: boolean
 }
 
 /** Dữ liệu hóa đơn sau khi hoàn tất (POST /api/pos/sales). */
 export interface Receipt {
-  transaction_id: number
-  receipt_no: string
-  txn_time: string
-  net_amount: number
-  eligible_amount: number | null
-  points_earned: number | null
-  points_redeemed: number | null
-  store_code: string
-  store_name: string
-  store_address: string
-  terminal_code: string
-  cashier_name: string
-  member_code: string | null
-  member_name: string | null
+  transactionId: number
+  receiptNo: string
+  txnTime: string
+  netAmount: number
+  eligibleAmount: number | null
+  pointsEarned: number | null
+  pointsRedeemed: number | null
+  storeCode: string
+  storeName: string
+  storeAddress: string
+  terminalCode: string
+  cashierName: string
+  memberCode: string | null
+  memberName: string | null
   memberPhone?: string
-  point_balance: number | null
-  tier_name: string | null
+  pointBalance: number | null
+  tierName: string | null
   lines: ReceiptLine[]
   payments: { method: string; amount: number }[]
   cashTendered: number | null

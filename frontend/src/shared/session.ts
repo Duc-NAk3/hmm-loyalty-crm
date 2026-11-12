@@ -13,11 +13,11 @@ export interface User {
 }
 
 export interface Terminal {
-  terminal_id: number
-  terminal_code: string
-  store_id: number
-  store_code: string
-  store_name: string
+  terminalId: number
+  terminalCode: string
+  storeId: number
+  storeCode: string
+  storeName: string
 }
 
 export interface Session {
@@ -59,7 +59,9 @@ export function setSession(area: Area, s: Session | null) {
 
 /** Quầy đã "đăng ký" cho máy này (giả lập đăng ký thiết bị POS). */
 export function getTerminal(): Terminal | null {
-  return read<Terminal>(TERMINAL_KEY)
+  const t = read<Terminal>(TERMINAL_KEY)
+  // Bỏ qua dữ liệu lưu theo định dạng cũ (snake_case) → máy POS chọn lại quầy
+  return t && typeof t.terminalId === 'number' ? t : null
 }
 
 export function setTerminal(t: Terminal | null) {

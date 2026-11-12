@@ -10,7 +10,7 @@ import ProductSearch, { type ProductSearchHandle } from './ProductSearch'
 import ReceiptView from './ReceiptView'
 import { type CartLine, type Product, type Receipt, type Shift, cartTotal, lineAmount } from './types'
 
-/** Mã hóa đơn do quầy sinh – là khóa chống trùng khi gửi lại (receipt_no). */
+/** Mã hóa đơn do quầy sinh – là khóa chống trùng khi gửi lại (receiptNo). */
 const newReceiptNo = (terminalCode: string) => `${terminalCode}-${dayjs().format('YYMMDD-HHmmssSSS')}`
 
 /** Màn hình bán hàng: quét mã, giỏ hàng, thanh toán tiền mặt, hóa đơn (FR-02, FR-04). */
@@ -21,7 +21,7 @@ export default function SaleScreen({ terminal, shift, onSold }: { terminal: Term
   const [payLoading, setPayLoading] = useState(false)
   const [payError, setPayError] = useState<string>()
   const [receipt, setReceipt] = useState<Receipt | null>(null)
-  const receiptNo = useRef(newReceiptNo(terminal.terminal_code))
+  const receiptNo = useRef(newReceiptNo(terminal.terminalCode))
   const searchRef = useRef<ProductSearchHandle>(null)
 
   const total = cartTotal(lines)
@@ -52,8 +52,8 @@ export default function SaleScreen({ terminal, shift, onSold }: { terminal: Term
     try {
       const r = await api<Receipt>('/api/pos/sales', {
         body: {
-          terminalId: terminal.terminal_id,
-          shiftId: shift.shift_id,
+          terminalId: terminal.terminalId,
+          shiftId: shift.shiftId,
           receiptNo: receiptNo.current,
           lines: lines.map((l) => ({ productId: l.product.productId, quantity: l.quantity })),
           cashTendered,
@@ -72,7 +72,7 @@ export default function SaleScreen({ terminal, shift, onSold }: { terminal: Term
   const newSale = () => {
     setReceipt(null)
     setLines([])
-    receiptNo.current = newReceiptNo(terminal.terminal_code)
+    receiptNo.current = newReceiptNo(terminal.terminalCode)
     setTimeout(() => searchRef.current?.focus(), 50)
   }
 
