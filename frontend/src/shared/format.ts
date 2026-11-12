@@ -31,3 +31,14 @@ export const CUSTOMER_STATUS: Record<string, { label: string; color: string }> =
   MERGED: { label: 'Đã gộp', color: 'default' },
   ANONYMIZED: { label: 'Đã ẩn danh', color: 'default' },
 }
+
+/** Số tiền rút gọn cho trục và thẻ KPI: 764149500 → "764,1 tr", 1,2 tỷ. */
+export const compactVnd = (n: number | null | undefined) => {
+  if (n == null) return '—'
+  const a = Math.abs(n)
+  if (a >= 1e9) return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 2 }).format(n / 1e9) + ' tỷ'
+  if (a >= 1e6) return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 }).format(n / 1e6) + ' tr'
+  if (a >= 1e3) return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(n / 1e3) + ' k'
+  return vndFormat.format(n)
+}
+export const pct = (n: number | null | undefined) => (n == null ? '—' : new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 }).format(n) + '%')

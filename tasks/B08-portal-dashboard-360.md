@@ -1,27 +1,33 @@
-# B8 – Portal: Dashboard KPI, khách hàng, Customer 360 · ⬜ Chưa làm (làm tiếp theo)
+# B8 – Portal: Dashboard KPI, khách hàng, Customer 360 · ✅ Xong (commit `__HASH__`)
 
-**FR:** FR-51 (Dashboard), FR-22 (Customer 360), FR-18 (tìm khách).
+**FR:** FR-51 (Dashboard), FR-22 (Customer 360), FR-18 (tìm khách trên Portal).
 
-## Backend đã có sẵn (module `report`)
-| API | Mô tả |
+Backend không đổi (module `report` đã có từ B1/B6.B); chỉ làm frontend.
+
+## File trong `frontend/src/`
+| File | Vai trò |
 |---|---|
-| `GET /api/portal/dashboard?from&to&storeId` | Vai trò ADMIN, STORE_MANAGER, MARKETING; quản lý cửa hàng tự bị giới hạn cửa hàng của mình. Trả `{ kpi, tiers, byStore, byDay, categories }`. |
-| `GET /api/portal/customers?q&tier&status&storeId&page&size` | `{ total, items[] }`; SĐT đã che |
-| `GET /api/portal/customers/{id}/360` | `{ profile, stats, transactions, ledger, consents, tierHistory, sources }` |
-| `GET /api/portal/customers/{id}/transactions/{txnId}/lines` | Dòng hàng của một hóa đơn |
-| `POST /api/portal/customers/{id}/reveal-phone` | Xem SĐT đầy đủ (ADMIN, CSKH); có ghi audit |
+| `portal/Dashboard.tsx` | Bộ lọc khoảng ngày (có sẵn 7/30/90 ngày, tháng này) và cửa hàng – một hàng phía trên. Quản lý cửa hàng: ô cửa hàng bị khóa, backend tự giới hạn. 6 thẻ KPI. Biểu đồ: doanh thu theo ngày (cột chồng thành viên / vãng lai, có nút chuyển sang **bảng số liệu**), theo cửa hàng (thanh ngang chồng; ẩn khi chỉ có 1 cửa hàng), phân bố hạng và top ngành hàng (thanh ngang một màu, kèm số và %). |
+| `portal/Customers.tsx` | Tìm theo SĐT / mã / họ tên, lọc hạng, trạng thái, phân trang 20; bộ lọc lưu trên URL. Bấm dòng → Customer 360. |
+| `portal/Customer360.tsx` | Hồ sơ; nút "Xem SĐT đầy đủ" (ADMIN, CSKH – có audit); số dư + dấu "khớp tổng sổ cái"; điểm sắp hết hạn; thanh tiến độ lên hạng. Tab: Hóa đơn (mở dòng để tải từng mặt hàng), Sổ cái điểm, Consent, Lịch sử hạng, Nguồn dữ liệu. |
+| `shared/chart.ts` | Màu và kiểu chung cho biểu đồ. |
+| `shared/format.ts` | Thêm `compactVnd` (764,1 tr / 1,2 tỷ) và `pct`. |
+| `App.tsx` | Route `dashboard`, `customers`, `customers/:id`; các mục còn lại vẫn là `Placeholder`. |
 
-## Việc cần làm (frontend `src/portal/`)
-1. **Trang `dashboard`:**
-   - Bộ lọc khoảng ngày và cửa hàng.
-   - Thẻ KPI: thành viên, tỷ lệ định danh, tỷ trọng doanh thu thành viên, tỷ lệ quay lại, giá trị giỏ.
-   - Biểu đồ Recharts: doanh thu theo ngày (thành viên / vãng lai), theo cửa hàng, phân bố hạng, top ngành hàng.
-   - **Trước khi vẽ biểu đồ phải đọc skill `dataviz`.**
-2. **Trang `customers`:** bảng tìm kiếm (từ khóa, hạng, trạng thái, phân trang) → bấm vào mở Customer 360.
-3. **Customer 360:** hồ sơ, tiến độ lên hạng, các tab Hóa đơn (mở xem dòng hàng) / Sổ cái điểm / Consent / Lịch sử hạng / Nguồn dữ liệu; nút "Xem SĐT đầy đủ".
-4. Thay `Placeholder` trong `App.tsx`.
+## Quy tắc biểu đồ (theo skill `dataviz`)
+- **Màu cố định theo thực thể:** Thành viên `#2a78d6` (slot 1), Vãng lai `#eb6834` (slot 2). Đã chạy `validate_palette.js` trên nền `#ffffff`: tất cả đạt (CVD ΔE 24,7).
+- Biểu đồ một chuỗi dùng một màu; không tô đậm nhạt theo độ lớn cho danh mục không có thứ tự.
+- Cột tối đa 24px, góc bo 4px ở đầu dữ liệu, khe 2px màu nền giữa hai đoạn chồng; lưới và trục là đường mảnh nhạt; không dùng hai trục Y.
+- Có chú giải khi ≥ 2 chuỗi; tooltip khi rê chuột; chữ dùng màu chữ, không dùng màu chuỗi.
+- Không làm chế độ tối vì toàn app (Ant Design) đang chỉ có giao diện sáng.
 
-## Kiểm tra
+## Đã kiểm tra (12/11/2026)
 - `npm run build` không lỗi.
-- Thử trên trình duyệt bằng `admin` và `ql.hm001` (chỉ thấy HM001), `cskh` (không thấy dashboard).
-- Customer 360 của Lan: tổng sổ cái bằng số dư.
+- `admin`: KPI 30 ngày khớp API (764,1 tr, 68,1% hóa đơn có định danh, 66,8% doanh thu thành viên, 63,1% quay lại, 801 thành viên); tooltip theo ngày; bảng số liệu.
+- Khách hàng: 801 khách, tìm và lọc chạy; Customer 360 của Lan: số dư 5.574 khớp tổng sổ cái, 148 hóa đơn, hóa đơn POS B7 (−200 / +20) mở được từng dòng hàng; sổ cái có EARN hết hạn 31/10/2027; xem SĐT đầy đủ có thông báo ghi nhật ký.
+- `ql.hm001`: ô cửa hàng khóa ở HM001; gọi API xin `storeId=2` vẫn nhận HM001; không xem được SĐT đầy đủ (403).
+- `cskh`: menu không có Dashboard, mở `/portal/dashboard` tự chuyển sang Khách hàng; API dashboard trả 403.
+
+## Còn lưu ý
+- Customer 360 không giới hạn theo cửa hàng với quản lý cửa hàng (danh sách thì có): khách là của toàn chuỗi, giữ như SRS.
+- Dashboard: dữ liệu mẫu có thể có ngày trống tùy ngày chạy seeder.
