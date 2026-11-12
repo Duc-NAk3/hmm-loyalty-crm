@@ -1,10 +1,9 @@
 HƯỚNG DẪN TEST THANH TOÁN TRÊN GIAO DIỆN POS
-Hoa Mai Mart – Loyalty CRM (bản demo) · cập nhật sau bước B6.B (ORM)
+Hoa Mai Mart – Loyalty CRM (bản demo) · cập nhật sau bước B7 (thành viên, đổi điểm)
 =====================================================================
 
 Giá trong file lấy từ dữ liệu mẫu ngày 12/11/2026 (gọi API POS của từng cửa hàng).
-Ở B6 chưa có phần gắn thành viên nên mọi lượt test dưới đây là khách vãng lai.
-Phần thành viên và điểm có ở B7; mục 5.2 (b) mô tả trước những gì sẽ xảy ra khi hóa đơn có thành viên.
+Mục 4 là 10 lượt khách vãng lai; mục 4B là các lượt có thành viên: tra cứu, đăng ký nhanh, đổi điểm có OTP.
 
 
 1. CHUẨN BỊ
@@ -79,7 +78,7 @@ Cách làm mỗi lượt:
   4) Bấm "Hoàn tất hóa đơn" (hoặc Enter).
   5) Kiểm tra hóa đơn hiện ra, rồi bấm "Hóa đơn mới" (Enter).
 
-"Giá trị tính điểm" là phần sẽ được tích điểm khi gắn thành viên (từ B7); đã bỏ hàng hạn chế khuyến mại và thẻ nạp.
+"Giá trị tính điểm" là phần sẽ được tích điểm khi gắn thành viên; đã bỏ hàng hạn chế khuyến mại và thẻ nạp.
 
 --- Thu ngân 1: tn.hm001.1 · quầy HM001-Q01 ---
 KH01  Sữa tươi có đường x2, Cải ngọt x1, Thịt ba chỉ x1
@@ -133,6 +132,60 @@ Các trường hợp lỗi nên thử thêm:
   - Đóng ca ở tab khác rồi thanh toán → "Ca bán hàng chưa mở hoặc đã đóng".
 
 
+4B. LƯỢT TEST CÓ THÀNH VIÊN (B7) – quầy HM001-Q01, tn.hm001.1
+---------------------------------------------------------------------
+Khung "Thành viên" nằm bên phải, dưới "Tổng cộng". Phím F4 đưa con trỏ vào ô tra cứu.
+Nhập SĐT (0…, 84…, +84…) hoặc mã HM… rồi Enter. Thẻ thành viên hiện: tên, mã, SĐT che, hạng × hệ số,
+điểm (≈ tiền), điểm sắp hết hạn, số tiền còn thiếu để lên hạng, nhãn "Chưa xác thực" / "Tạm khóa đổi điểm".
+Nút "Điện thoại khách (giả lập)" là CÔNG CỤ DEMO: hiện SMS giả lập gửi tới khách (OTP, chào mừng).
+
+TV1 – Nguyễn Thị Lan 0901234567 (Kim cương ×2, chưa xác thực): đổi điểm lần đầu có OTP
+   1) Quét 8931002000144, 8931003000266, 8931001000015 → tổng 127.000.
+   2) F4, gõ 0901234567, Enter → thẻ Lan, nhãn "Chưa xác thực".
+   3) "Đổi điểm" → báo giá: giá trị được đổi điểm 127.000, tối đa 635 điểm = 63.500 (50%).
+      Sửa thành 200 → "Gửi OTP cho khách".
+   4) "Xem OTP trên điện thoại khách (giả lập)" → đọc mã 6 số. Thử gõ sai trước: "Mã OTP không đúng".
+      Gõ đúng: tự xác nhận → "Đã giữ 200 điểm (−20.000đ). SĐT của khách đã được xác thực".
+      Thẻ hiện khung "Đang giữ" với đồng hồ đếm ngược 15 phút; nhãn "Chưa xác thực" mất.
+   5) F9 → "Trừ bằng điểm − 20.000", khách cần trả tiền mặt 107.000 → Hoàn tất.
+   6) Hóa đơn: Điểm 20.000, Tiền mặt 107.000; Điểm đã dùng −200; Điểm cộng +20
+      (floor(107.000 / 10.000) = 10 × 2.0 = 20; phần trả bằng điểm không được tích điểm).
+   CSDL: point_redemptions CONFIRMED; point_ledgers HOLD −200, RELEASE +200, nhiều dòng REDEEM (trừ từng lô
+   theo FIFO, cộng lại = −200), EARN +20; customers.status = VERIFIED; payments có 1 dòng POINTS và 1 dòng CASH.
+
+TV2 – Trần Văn Hùng 0912345678 (đang bị khóa đổi điểm)
+   Gắn Hùng → thẻ có nhãn đỏ "Tạm khóa đổi điểm". Bấm "Đổi điểm" → "Không đổi điểm được:
+   Tài khoản đang tạm khóa đổi điểm, mời khách liên hệ CSKH". Vẫn bán và tích điểm bình thường.
+
+TV3 – Đăng ký nhanh 0987654321 (chưa có trong dữ liệu)
+   1) Quét 8931002000144 (75.000). F4, gõ 0987654321, Enter → mở "Đăng ký thành viên nhanh", SĐT điền sẵn.
+   2) Nhập họ tên (bắt buộc), giới tính / ngày sinh tùy chọn, tick đồng ý nhận SMS nếu khách muốn → Đăng ký.
+   3) Thẻ thành viên mới HM1000xxxx, hạng Thành viên ×1, 0 điểm, "Chưa xác thực".
+      "Điện thoại khách" có tin chào mừng kèm mã thành viên.
+   4) Thanh toán → hóa đơn: Điểm cộng +7 (floor(75.000 / 10.000) × 1.0), số dư 7.
+   CSDL: customers +1 (UNVERIFIED), consents MEMBERSHIP (+ MARKETING_SMS nếu tick), outbox SMS_WELCOME, EARN +7.
+   Lưu ý: sau lượt này SĐT đã có trong CSDL; muốn demo đăng ký lại thì tạo lại database (xem CLAUDE.md).
+
+TV4 – Phạm Minh Tuấn 0935123456: hủy đổi điểm, trả lại điểm
+   a) Gắn Tuấn, quét 8931002000144, đổi tối đa điểm, nhập OTP → đang giữ.
+      Bấm "Hủy đổi điểm (trả lại điểm)" → "Đã hủy đổi điểm, trả lại … điểm"; số dư trở về như cũ.
+   b) Đổi điểm lại, giữ xong thì quét thêm 1 mặt hàng (hoặc sửa số lượng) → tự hủy và báo
+      "Giỏ hàng đã thay đổi nên điểm giữ đã được trả lại…". Lý do: số điểm tối đa phụ thuộc giỏ hàng.
+   c) "Hủy hóa đơn đang bán" khi đang giữ điểm cũng trả lại điểm.
+   d) Không thao tác 15 phút: tác vụ nền chuyển yêu cầu sang EXPIRED và trả điểm; màn hình báo hết thời gian giữ.
+   CSDL: point_redemptions RELEASED (hoặc EXPIRED); point_ledgers HOLD −x rồi RELEASE +x.
+
+API dùng trong mục này (đều ở PosController, chỉ thu ngân gọi được):
+   GET  /api/pos/members/lookup?q=          tra cứu (404 "Chưa là thành viên" → mở đăng ký nhanh)
+   POST /api/pos/members                    đăng ký nhanh
+   POST /api/pos/redemptions/quote          báo giá đổi điểm
+   POST /api/pos/redemptions                tạo yêu cầu, gửi OTP (QUOTED)
+   POST /api/pos/redemptions/{id}/verify    OTP đúng → HELD; sai 3 lần hoặc hết hạn → hủy
+   POST /api/pos/redemptions/{id}/cancel    trả lại điểm (RELEASED)
+   GET  /api/pos/mock-phone?customerId=     5 SMS giả lập mới nhất (công cụ demo)
+Frontend: src/pos/MemberPanel.tsx, RegisterModal.tsx, RedeemModal.tsx, MockPhone.tsx, SaleScreen.tsx.
+
+
 5. KHI BẤM "HOÀN TẤT HÓA ĐƠN" – ĐIỀU GÌ XẢY RA
 =====================================================================
 
@@ -143,7 +196,7 @@ Các trường hợp lỗi nên thử thêm:
    - receiptNo: mã hóa đơn do quầy sinh, ví dụ HM001-Q01-261112-091149183;
    - danh sách dòng hàng: chỉ productId và quantity, không gửi giá;
    - cashTendered: tiền khách đưa.
-   Từ B7, yêu cầu có thêm customerId và redemptionId nếu có.
+   Có thành viên thì thêm customerId; có đổi điểm thì thêm redemptionId (mã yêu cầu đã giữ điểm).
 2) Thành công:
    - hộp thanh toán đóng;
    - hiện "Hoàn tất hóa đơn" kèm tiền thừa và hóa đơn xem trước dạng in nhiệt, gồm: cửa hàng, số HĐ, giờ, quầy, thu ngân, dòng hàng, tổng, tiền mặt, khách đưa, tiền thừa, dấu * cho hàng không tích điểm;
@@ -169,7 +222,7 @@ a) Hóa đơn khách vãng lai (B6), ví dụ KH01:
    pos.shifts               KHÔNG đổi ngay. Tiền mặt của ca được tính lại từ payments khi xem ca và khi đóng ca.
                             Khi đóng ca mới ghi closed_at, expected_cash, counted_cash, cash_difference.
 
-b) Hóa đơn có thành viên (từ B7; backend đã làm sẵn):
+b) Hóa đơn có thành viên (mục 4B):
    customer.customers       point_balance cộng điểm; spend_12m cộng tổng tiền; tier_code đổi nếu đủ ngưỡng lên hạng
    loyalty.point_lots       +1 lô điểm: points_earned, points_remaining, expires_at = cuối tháng thứ 12
    loyalty.point_ledgers    +1 bút toán EARN (+điểm, balance_after); bảng này chỉ ghi thêm, có trigger chặn sửa/xóa
@@ -192,7 +245,7 @@ c) Câu lệnh kiểm tra sau khi test (pgAdmin hoặc psql):
    SELECT * FROM pos.payments WHERE transaction_id = (SELECT max(transaction_id) FROM pos.sales_transactions);
    -- ca hôm nay của các quầy
    SELECT * FROM pos.shifts WHERE opened_at::date = current_date ORDER BY shift_id;
-   -- (từ B7) số dư luôn bằng tổng sổ cái: kết quả phải là 0
+   -- số dư luôn bằng tổng sổ cái: kết quả phải là 0
    SELECT count(*) FROM customer.customers c
    WHERE point_balance <> (SELECT COALESCE(sum(points),0) FROM loyalty.point_ledgers g WHERE g.customer_id = c.customer_id);
 
@@ -231,18 +284,18 @@ Backend dùng ORM: Spring Data JPA (Hibernate). Mỗi module chia lớp theo cù
         - ProductRepository (entity Product, Category, ProductBarcode) và ProductPriceRepository.findEffective() (JPQL)
           lấy giá ĐANG hiệu lực, đã duyệt; giá riêng cửa hàng ưu tiên hơn giá toàn chuỗi.
         - Giá luôn do backend tính lại, không tin giá gửi từ máy quầy.
-    8.4 Nếu có customerId: CustomerFacade.findById() (từ B7).
+    8.4 Nếu có customerId: CustomerFacade.findById().
     8.5 Tạo entity SalesTransaction (aggregate): SalesTransaction.sale(...), addLine() cho từng dòng
         rồi SalesTransactionRepository.saveAndFlush().
         → INSERT pos.sales_transactions + pos.transaction_lines (cascade).
         Ghi ngay để sổ cái điểm tham chiếu được transaction_id.
-    8.6 Nếu có redemptionId (từ B7): LoyaltyFacade.confirmRedemption()
+    8.6 Nếu có redemptionId: LoyaltyFacade.confirmRedemption()
         → RedemptionService.confirm(): entity PointRedemption.confirm() tự kiểm tra trạng thái HELD và hạn giữ điểm;
         → LedgerService.redeem(): PointLotRepository.findOpenLotsForUpdate() (FIFO, khóa dòng), PointLot.consume(),
           ghi PointLedger (RELEASE, REDEEM), CustomerFacade.adjustPointBalance().
         Thêm khoản thanh toán POINTS: txn.addPayment(POINTS); kiểm tra không vượt 50% giá trị hàng được đổi điểm.
     8.7 Kiểm tra tiền khách đưa ≥ phần phải trả; txn.addPayment(CASH).
-    8.8 Nếu có thành viên (từ B7): LoyaltyFacade.earnForSale()
+    8.8 Nếu có thành viên: LoyaltyFacade.earnForSale()
         - LoyaltyConfigService: chính sách điểm và hệ số hạng;
         - PointCalculator.earnedPoints(): floor(floor(giá trị tính điểm / 10.000) × hệ số hạng);
         - LedgerService.earn(): lưu PointLot + PointLedger (EARN), CustomerFacade.adjustPointBalance()

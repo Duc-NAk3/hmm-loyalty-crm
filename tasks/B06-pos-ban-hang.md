@@ -13,4 +13,4 @@
 
 **Tài liệu test:** `docs/HUONG_DAN_TEST_POS.txt` gồm 3 thu ngân, 20 mặt hàng, 10 lượt thanh toán có tổng tiền tính sẵn, giải thích màn hình, thay đổi CSDL và luồng code.
 
-**Đang để chỗ chờ:** khung "Thành viên" trong `SaleScreen.tsx` hiện ghi chú "sẽ có ở bước B7".
+**Sau B7:** khung "Thành viên", đăng ký nhanh và đổi điểm OTP đã được thêm vào `SaleScreen.tsx` – xem `B07-pos-thanh-vien-doi-diem.md`.
