@@ -1,4 +1,4 @@
-# B10 – README và kịch bản demo · ⬜ Chưa làm
+# B10 – README và kịch bản demo · ⬜ Chưa làm (làm tiếp theo)
 
 **Việc cần làm:**
 1. **`README.md`:**

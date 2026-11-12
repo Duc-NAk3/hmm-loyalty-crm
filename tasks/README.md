@@ -19,8 +19,8 @@ Mỗi bước là một file `Bxx-*.md`. Trạng thái ghi ở dòng đầu mỗ
 | [B6.B](B06B-orm-design-pattern.md) | Chuyển sang ORM (JPA) + design pattern | ✅ | `76f5744`, `182f93f`, `3bbdf39`, `cb0d614` |
 | [B7](B07-pos-thanh-vien-doi-diem.md) | POS: thành viên, đăng ký, đổi điểm OTP | ✅ | `3035ae3` |
 | [B8](B08-portal-dashboard-360.md) | Portal: Dashboard KPI, khách hàng, Customer 360 | ✅ | `1853564` |
-| [B9](B09-portal-quan-tri.md) | Portal: mặt hàng & giá, chuyển đổi dữ liệu, người dùng, hộp thư SMS, xét hạng | ⬜ **làm tiếp theo** | |
-| [B10](B10-readme-kich-ban-demo.md) | README đầy đủ + kịch bản demo ~10 phút | ⬜ | |
+| [B9](B09-portal-quan-tri.md) | Portal: mặt hàng & giá, chuyển đổi dữ liệu, người dùng, hộp thư SMS, xét hạng | ✅ | `e4a366c` |
+| [B10](B10-readme-kich-ban-demo.md) | README đầy đủ + kịch bản demo ~10 phút | ⬜ **làm tiếp theo** | |
 | [B11](B11-docker.md) | Docker compose + hướng dẫn Docker | ⬜ | |
 | [Sau demo](B12-sau-demo.md) | Merge `main`, tài liệu Word còn lại (test case, rủi ro, thuyết trình) | ⬜ | |
 

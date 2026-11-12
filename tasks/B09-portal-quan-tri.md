@@ -1,4 +1,4 @@
-# B9 – Portal: mặt hàng & giá, chuyển đổi dữ liệu, người dùng, hộp thư SMS, hạng · ✅ Xong (commit `__HASH__`)
+# B9 – Portal: mặt hàng & giá, chuyển đổi dữ liệu, người dùng, hộp thư SMS, hạng · ✅ Xong (commit `e4a366c`)
 
 **FR:** FR-11 (mặt hàng, nhập CSV), FR-12 (giá có duyệt), FR-58/59/60 (chuyển đổi dữ liệu), FR-65 (người dùng), FR-31 (bảng hạng, nút chạy xét hạng).
 
