@@ -6,6 +6,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -44,6 +45,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({ObjectOptimisticLockingFailureException.class, PessimisticLockingFailureException.class})
     ResponseEntity<Map<String, String>> concurrent(RuntimeException e) {
         return body(HttpStatus.CONFLICT, "CONCURRENT_UPDATE", "Dữ liệu đang được thao tác ở nơi khác, vui lòng thử lại");
+    }
+
+    /** Body JSON sai cú pháp hoặc sai kiểu dữ liệu: lỗi của bên gọi (400), không phải lỗi hệ thống. */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    ResponseEntity<Map<String, String>> unreadable(HttpMessageNotReadableException e) {
+        return body(HttpStatus.BAD_REQUEST, "BAD_REQUEST", "Dữ liệu gửi lên không đúng định dạng");
     }
 
     @ExceptionHandler(AccessDeniedException.class)

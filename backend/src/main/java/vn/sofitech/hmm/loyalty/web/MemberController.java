@@ -41,7 +41,7 @@ public class MemberController {
     public MemberSummary register(@Valid @RequestBody RegisterRequest req, @AuthenticationPrincipal Jwt jwt) {
         CurrentUser u = CurrentUser.of(jwt);
         return members.summary(customers.registerAtPos(req.phone(), req.fullName(), req.gender(), req.dateOfBirth(),
-                req.marketingConsent(), u.storeId(), u.id()));
+                req.consentsToMarketing(), u.storeId(), u.id()));
     }
 
     @GetMapping("/api/portal/loyalty/tiers")

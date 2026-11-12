@@ -21,8 +21,13 @@ public final class LoyaltyDtos {
                                 String nextTierName, long spendToNextTier) {
     }
 
-    public record RegisterRequest(@NotBlank String phone, @NotBlank String fullName, String gender, LocalDate dateOfBirth,
-                                  boolean marketingConsent) {
+    /** Đăng ký nhanh tại quầy (FR-19). {@code marketingConsent} không gửi thì coi như không đồng ý. */
+    public record RegisterRequest(@NotBlank(message = "SĐT là bắt buộc") String phone,
+                                  @NotBlank(message = "Họ tên là bắt buộc") String fullName, String gender, LocalDate dateOfBirth,
+                                  Boolean marketingConsent) {
+        public boolean consentsToMarketing() {
+            return Boolean.TRUE.equals(marketingConsent);
+        }
     }
 
     public record TierView(String tierCode, String name, long thresholdSpend, BigDecimal multiplier, String benefits, long members) {
