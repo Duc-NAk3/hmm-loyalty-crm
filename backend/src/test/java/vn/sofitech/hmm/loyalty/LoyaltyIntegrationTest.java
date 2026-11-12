@@ -1,5 +1,14 @@
 package vn.sofitech.hmm.loyalty;
 
+import vn.sofitech.hmm.admin.repository.AppUserRepository;
+import vn.sofitech.hmm.admin.repository.PosTerminalRepository;
+import vn.sofitech.hmm.admin.repository.RoleRepository;
+import vn.sofitech.hmm.admin.repository.StoreRepository;
+import vn.sofitech.hmm.loyalty.repository.LoyaltyPolicyRepository;
+import vn.sofitech.hmm.loyalty.repository.PointLedgerRepository;
+import vn.sofitech.hmm.loyalty.repository.PointLotRepository;
+import vn.sofitech.hmm.loyalty.repository.PointRedemptionRepository;
+import vn.sofitech.hmm.loyalty.repository.TierRepository;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -16,9 +25,9 @@ import vn.sofitech.hmm.loyalty.domain.*;
 import vn.sofitech.hmm.loyalty.service.LedgerService;
 import vn.sofitech.hmm.loyalty.service.LoyaltyConfigService;
 import vn.sofitech.hmm.pos.domain.SalesTransaction;
-import vn.sofitech.hmm.pos.domain.SalesTransactionRepository;
+import vn.sofitech.hmm.pos.repository.SalesTransactionRepository;
 import vn.sofitech.hmm.shared.ApiException;
-import vn.sofitech.hmm.shared.domain.OutboxMessageRepository;
+import vn.sofitech.hmm.shared.repository.OutboxMessageRepository;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;

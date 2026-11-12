@@ -1,5 +1,6 @@
-package vn.sofitech.hmm.loyalty.domain;
+package vn.sofitech.hmm.loyalty.repository;
 
+import vn.sofitech.hmm.loyalty.domain.PointLot;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;

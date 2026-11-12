@@ -1,5 +1,6 @@
-package vn.sofitech.hmm.loyalty.domain;
+package vn.sofitech.hmm.loyalty.repository;
 
+import vn.sofitech.hmm.loyalty.domain.Tier;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

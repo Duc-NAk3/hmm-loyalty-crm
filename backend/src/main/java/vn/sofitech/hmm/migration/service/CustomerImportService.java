@@ -1,5 +1,8 @@
 package vn.sofitech.hmm.migration.service;
 
+import vn.sofitech.hmm.migration.repository.CustomerSourceRecordRepository;
+import vn.sofitech.hmm.migration.repository.ImportBatchRepository;
+import vn.sofitech.hmm.migration.repository.ImportErrorRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;

@@ -5,7 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 import vn.sofitech.hmm.customer.CustomerFacade;
 import vn.sofitech.hmm.customer.CustomerFacade.CustomerInfo;
 import vn.sofitech.hmm.loyalty.PointCalculator;
-import vn.sofitech.hmm.loyalty.domain.PointLotRepository;
+import vn.sofitech.hmm.loyalty.repository.PointLotRepository;
 import vn.sofitech.hmm.loyalty.web.LoyaltyDtos.MemberSummary;
 import vn.sofitech.hmm.loyalty.web.LoyaltyDtos.TierView;
 import vn.sofitech.hmm.shared.Texts;

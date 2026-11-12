@@ -1,5 +1,6 @@
-package vn.sofitech.hmm.admin.domain;
+package vn.sofitech.hmm.admin.repository;
 
+import vn.sofitech.hmm.admin.domain.Store;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

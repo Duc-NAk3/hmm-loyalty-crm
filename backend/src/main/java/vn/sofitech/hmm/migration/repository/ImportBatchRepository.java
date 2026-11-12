@@ -1,5 +1,7 @@
-package vn.sofitech.hmm.migration.domain;
+package vn.sofitech.hmm.migration.repository;
 
+import vn.sofitech.hmm.migration.domain.CustomerSourceRecord;
+import vn.sofitech.hmm.migration.domain.ImportBatch;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

@@ -1,5 +1,7 @@
-package vn.sofitech.hmm.pos.domain;
+package vn.sofitech.hmm.pos.repository;
 
+import vn.sofitech.hmm.pos.domain.Payment;
+import vn.sofitech.hmm.pos.domain.SalesTransaction;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

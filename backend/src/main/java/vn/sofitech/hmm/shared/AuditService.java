@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 import vn.sofitech.hmm.shared.domain.AuditLog;
-import vn.sofitech.hmm.shared.domain.AuditLogRepository;
+import vn.sofitech.hmm.shared.repository.AuditLogRepository;
 
 import java.time.OffsetDateTime;
 

@@ -1,5 +1,6 @@
-package vn.sofitech.hmm.loyalty.domain;
+package vn.sofitech.hmm.loyalty.repository;
 
+import vn.sofitech.hmm.loyalty.domain.LoyaltyPolicy;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.OffsetDateTime;

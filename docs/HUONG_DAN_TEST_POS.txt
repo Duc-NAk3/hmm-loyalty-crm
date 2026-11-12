@@ -252,7 +252,7 @@ c) Câu lệnh kiểm tra sau khi test (pgAdmin hoặc psql):
 5.3 Luồng dữ liệu trong code (từ nút bấm tới CSDL)
 ---------------------------------------------------------------------
 Backend dùng ORM: Spring Data JPA (Hibernate). Mỗi module chia lớp theo cùng một mẫu:
-  Controller (web/) → Facade / Service (service/) → Repository (domain/) → Entity (domain/) → bảng CSDL.
+  Controller (web/) → Facade / Service (service/) → Repository (repository/) → Entity (domain/) → bảng CSDL.
 - Module khác chỉ được gọi qua Facade ở gốc package: CatalogFacade, CustomerFacade, LoyaltyFacade, AdminFacade.
   Spring Modulith kiểm tra quy tắc này trong ModularityTest.
 - API trả DTO (Java record, tên trường camelCase), không trả entity.

@@ -1,5 +1,6 @@
-package vn.sofitech.hmm.customer.domain;
+package vn.sofitech.hmm.customer.repository;
 
+import vn.sofitech.hmm.customer.domain.Customer;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;

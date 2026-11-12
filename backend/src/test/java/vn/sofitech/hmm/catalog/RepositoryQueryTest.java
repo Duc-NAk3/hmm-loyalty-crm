@@ -1,5 +1,11 @@
 package vn.sofitech.hmm.catalog;
 
+import vn.sofitech.hmm.admin.repository.AppUserRepository;
+import vn.sofitech.hmm.admin.repository.RoleRepository;
+import vn.sofitech.hmm.admin.repository.StoreRepository;
+import vn.sofitech.hmm.catalog.repository.CategoryRepository;
+import vn.sofitech.hmm.catalog.repository.ProductPriceRepository;
+import vn.sofitech.hmm.catalog.repository.ProductRepository;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -13,9 +19,9 @@ import vn.sofitech.hmm.catalog.domain.*;
 import vn.sofitech.hmm.catalog.service.PriceService;
 import vn.sofitech.hmm.customer.CustomerFacade;
 import vn.sofitech.hmm.loyalty.domain.PointLot;
-import vn.sofitech.hmm.loyalty.domain.PointLotRepository;
+import vn.sofitech.hmm.loyalty.repository.PointLotRepository;
 import vn.sofitech.hmm.pos.domain.SalesTransaction;
-import vn.sofitech.hmm.pos.domain.SalesTransactionRepository;
+import vn.sofitech.hmm.pos.repository.SalesTransactionRepository;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;

@@ -1,5 +1,6 @@
-package vn.sofitech.hmm.migration.domain;
+package vn.sofitech.hmm.migration.repository;
 
+import vn.sofitech.hmm.migration.domain.ImportError;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

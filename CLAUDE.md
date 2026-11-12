@@ -44,8 +44,9 @@ Không làm: bán khi mất mạng (FR-09), hóa đơn điện tử, voucher, ph
   - Gốc package: `<Module>Facade` (interface) và các record DTO dùng chung. Chỉ phần này được module khác gọi.
   - `web/`: `@RestController` và `XxxDtos` (record, JSON camelCase). Entity không bao giờ trả ra API.
   - `service/`: `@Service` nghiệp vụ và `@Transactional`; cài đặt Facade nằm ở đây (ví dụ `LoyaltyFacadeImpl`, `CustomerService implements CustomerFacade`).
-  - `domain/`: `@Entity` (Lombok `@Getter`, rich domain method) và Spring Data JPA Repository.
-  - `ModularityTest` (Spring Modulith) báo lỗi khi gọi vào `web/`, `service/`, `domain/` của module khác hoặc khi có phụ thuộc vòng. Package `demo` được loại khỏi kiểm tra này.
+  - `domain/`: `@Entity` (Lombok `@Getter`, rich domain method) và enum trạng thái.
+  - `repository/`: interface Spring Data JPA (`extends JpaRepository<Entity, Long>`) – truy vấn theo tên hàm, `@Query` JPQL, `@Lock`.
+  - `ModularityTest` (Spring Modulith) báo lỗi khi gọi vào `web/`, `service/`, `domain/`, `repository/` của module khác hoặc khi có phụ thuộc vòng. Package `demo` được loại khỏi kiểm tra này.
 - **ORM:** Spring Data JPA (Hibernate 7), `ddl-auto=validate`.
   - Schema chỉ quản lý bằng Flyway (`db/migration`); V2 đổi bước nhảy sequence thành 50, dùng `@SequenceGenerator(allocationSize = 50)` với optimizer `pooled-lo`.
   - Tên bảng số nhiều, đúng như ERD.

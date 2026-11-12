@@ -1,5 +1,6 @@
-package vn.sofitech.hmm.pos.domain;
+package vn.sofitech.hmm.pos.repository;
 
+import vn.sofitech.hmm.pos.domain.Shift;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;

@@ -7,8 +7,8 @@ import vn.sofitech.hmm.catalog.CatalogFacade;
 import vn.sofitech.hmm.catalog.domain.Product;
 import vn.sofitech.hmm.catalog.domain.ProductBarcode;
 import vn.sofitech.hmm.catalog.domain.ProductPrice;
-import vn.sofitech.hmm.catalog.domain.ProductPriceRepository;
-import vn.sofitech.hmm.catalog.domain.ProductRepository;
+import vn.sofitech.hmm.catalog.repository.ProductPriceRepository;
+import vn.sofitech.hmm.catalog.repository.ProductRepository;
 import vn.sofitech.hmm.shared.Texts;
 
 import java.time.OffsetDateTime;

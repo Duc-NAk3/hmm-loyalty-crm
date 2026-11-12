@@ -1,5 +1,6 @@
-package vn.sofitech.hmm.admin.domain;
+package vn.sofitech.hmm.admin.repository;
 
+import vn.sofitech.hmm.admin.domain.AppUser;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 

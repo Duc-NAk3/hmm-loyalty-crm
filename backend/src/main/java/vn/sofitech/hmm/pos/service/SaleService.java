@@ -1,5 +1,6 @@
 package vn.sofitech.hmm.pos.service;
 
+import vn.sofitech.hmm.pos.repository.SalesTransactionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.sofitech.hmm.admin.AdminFacade;

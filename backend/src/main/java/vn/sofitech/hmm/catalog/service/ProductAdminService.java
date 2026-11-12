@@ -1,5 +1,9 @@
 package vn.sofitech.hmm.catalog.service;
 
+import vn.sofitech.hmm.catalog.repository.CategoryRepository;
+import vn.sofitech.hmm.catalog.repository.ProductBarcodeRepository;
+import vn.sofitech.hmm.catalog.repository.ProductPriceRepository;
+import vn.sofitech.hmm.catalog.repository.ProductRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;

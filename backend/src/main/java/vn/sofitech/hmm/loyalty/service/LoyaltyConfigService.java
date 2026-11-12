@@ -4,8 +4,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.sofitech.hmm.loyalty.PointCalculator;
 import vn.sofitech.hmm.loyalty.domain.LoyaltyPolicy;
-import vn.sofitech.hmm.loyalty.domain.LoyaltyPolicyRepository;
-import vn.sofitech.hmm.loyalty.domain.TierRepository;
+import vn.sofitech.hmm.loyalty.repository.LoyaltyPolicyRepository;
+import vn.sofitech.hmm.loyalty.repository.TierRepository;
 import vn.sofitech.hmm.shared.ApiException;
 import vn.sofitech.hmm.shared.Texts;
 

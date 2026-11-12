@@ -1,5 +1,8 @@
 package vn.sofitech.hmm.loyalty.service;
 
+import vn.sofitech.hmm.loyalty.repository.LoyaltyPolicyRepository;
+import vn.sofitech.hmm.loyalty.repository.PointLedgerRepository;
+import vn.sofitech.hmm.loyalty.repository.PointLotRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;

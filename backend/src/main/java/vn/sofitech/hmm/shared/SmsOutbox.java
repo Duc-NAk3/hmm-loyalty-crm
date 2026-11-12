@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 import vn.sofitech.hmm.shared.domain.OutboxMessage;
-import vn.sofitech.hmm.shared.domain.OutboxMessageRepository;
+import vn.sofitech.hmm.shared.repository.OutboxMessageRepository;
 
 import java.time.OffsetDateTime;
 import java.util.LinkedHashMap;

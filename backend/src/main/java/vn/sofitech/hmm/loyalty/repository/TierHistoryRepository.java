@@ -1,5 +1,6 @@
-package vn.sofitech.hmm.loyalty.domain;
+package vn.sofitech.hmm.loyalty.repository;
 
+import vn.sofitech.hmm.loyalty.domain.TierHistory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

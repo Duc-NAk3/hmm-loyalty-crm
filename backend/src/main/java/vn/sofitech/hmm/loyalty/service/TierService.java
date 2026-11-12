@@ -12,7 +12,7 @@ import vn.sofitech.hmm.customer.CustomerFacade;
 import vn.sofitech.hmm.customer.CustomerFacade.CustomerInfo;
 import vn.sofitech.hmm.loyalty.PointCalculator;
 import vn.sofitech.hmm.loyalty.domain.TierHistory;
-import vn.sofitech.hmm.loyalty.domain.TierHistoryRepository;
+import vn.sofitech.hmm.loyalty.repository.TierHistoryRepository;
 import vn.sofitech.hmm.shared.SmsRequestedEvent;
 import vn.sofitech.hmm.shared.Texts;
 

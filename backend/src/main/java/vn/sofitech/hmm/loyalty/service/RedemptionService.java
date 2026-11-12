@@ -15,7 +15,7 @@ import vn.sofitech.hmm.loyalty.LoyaltyFacade.RedemptionInfo;
 import vn.sofitech.hmm.loyalty.LoyaltyFacade.RedemptionRequested;
 import vn.sofitech.hmm.loyalty.PointCalculator;
 import vn.sofitech.hmm.loyalty.domain.PointRedemption;
-import vn.sofitech.hmm.loyalty.domain.PointRedemptionRepository;
+import vn.sofitech.hmm.loyalty.repository.PointRedemptionRepository;
 import vn.sofitech.hmm.shared.ApiException;
 import vn.sofitech.hmm.shared.SmsRequestedEvent;
 import vn.sofitech.hmm.shared.Texts;

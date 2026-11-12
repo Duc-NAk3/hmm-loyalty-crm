@@ -1,5 +1,9 @@
 package vn.sofitech.hmm.admin.service;
 
+import vn.sofitech.hmm.admin.repository.AppUserRepository;
+import vn.sofitech.hmm.admin.repository.PosTerminalRepository;
+import vn.sofitech.hmm.admin.repository.RoleRepository;
+import vn.sofitech.hmm.admin.repository.StoreRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

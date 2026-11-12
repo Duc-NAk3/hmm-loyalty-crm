@@ -1,5 +1,6 @@
 package vn.sofitech.hmm.demo;
 
+import vn.sofitech.hmm.admin.repository.StoreRepository;
 import jakarta.persistence.EntityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +16,7 @@ import vn.sofitech.hmm.catalog.domain.Product;
 import vn.sofitech.hmm.catalog.domain.ProductPrice;
 import vn.sofitech.hmm.customer.domain.Consent;
 import vn.sofitech.hmm.customer.domain.Customer;
-import vn.sofitech.hmm.customer.domain.CustomerRepository;
+import vn.sofitech.hmm.customer.repository.CustomerRepository;
 import vn.sofitech.hmm.loyalty.PointCalculator;
 import vn.sofitech.hmm.loyalty.PointCalculator.Policy;
 import vn.sofitech.hmm.loyalty.domain.*;
