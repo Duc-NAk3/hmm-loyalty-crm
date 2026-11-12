@@ -1,0 +1,256 @@
+HƯỚNG DẪN TEST THANH TOÁN TRÊN GIAO DIỆN POS
+Hoa Mai Mart – Loyalty CRM (bản demo) · cập nhật sau bước B6
+=====================================================================
+
+Giá trong file lấy từ dữ liệu mẫu ngày 12/11/2026 (gọi API POS của từng cửa hàng).
+Ở B6 chưa có phần gắn thành viên nên mọi lượt test dưới đây là khách vãng lai.
+Phần thành viên và điểm có ở B7; mục 5.2 (b) mô tả trước những gì sẽ xảy ra khi hóa đơn có thành viên.
+
+
+1. CHUẨN BỊ
+---------------------------------------------------------------------
+1) Chạy backend:
+   cd 05_SourceCode\backend
+   .\mvnw.cmd spring-boot:run
+   Chờ thấy dòng "Started HmmLoyaltyApplication", cổng 8080.
+2) Chạy frontend:
+   cd 05_SourceCode\frontend
+   npm install
+   npm run dev
+   npm install chỉ cần chạy lần đầu. Frontend chạy ở http://localhost:5173.
+3) Mở http://localhost:5173 và chọn "POS tại quầy".
+4) Lần đầu, chọn quầy cho máy. Muốn dùng quầy khác thì bấm "Đổi quầy" ở màn đăng nhập.
+   Mỗi thu ngân chỉ đăng nhập được ở quầy thuộc cửa hàng của mình.
+
+
+2. 3 TÀI KHOẢN THU NGÂN (mật khẩu chung: Demo@123)
+---------------------------------------------------------------------
+ #  Tên đăng nhập  Họ tên            Cửa hàng                  Chọn quầy
+ 1  tn.hm001.1     Nguyễn Thu Hà     HM001 – Cầu Giấy, Hà Nội  HM001-Q01
+ 2  tn.hm002.1     Trần Thị Hồng     HM002 – Hải Châu, Đà Nẵng HM002-Q01
+ 3  tn.hm003.1     Huỳnh Ngọc Trâm   HM003 – Quận 7, TP.HCM    HM003-Q01
+
+- Sau khi đăng nhập, nếu quầy chưa có ca đang mở thì màn hình yêu cầu mở ca.
+  Nhập tiền đầu ca (mặc định 2.000.000đ) rồi bấm "Mở ca".
+- Quầy HM001-Q01 có thể đang có sẵn ca mở từ lần test trước; khi đó vào thẳng màn hình bán hàng.
+- Thử sai quyền: đăng nhập tn.hm002.1 ở quầy HM001-Q01 sẽ báo "Thu ngân không thuộc cửa hàng của quầy này".
+
+
+3. 20 MẶT HÀNG DÙNG ĐỂ TEST
+---------------------------------------------------------------------
+Nhập mã vạch vào ô quét rồi Enter (hoặc gõ tên / mã hàng).
+Cột giá: HM001 và HM002 dùng giá toàn chuỗi; HM003 có giá riêng cho một số mặt hàng.
+
+ #  Mã hàng      Mã vạch        Tên mặt hàng                          Giá HM001/HM002  Giá HM003  Ghi chú
+ 1  RAU001       8931001000015  Cải ngọt Đà Lạt 500g                    18.000           18.000     (a)
+ 2  RAU003       8931001000039  Cà chua bi 500g                         33.500           33.500     (b)
+ 3  RAU007       8931001000077  Hành tây 500g                           15.000           14.500     (c)
+ 4  THIT001      8931002000144  Thịt ba chỉ heo 500g                    75.000           75.000
+ 5  THIT002      8931002000151  Thịt nạc vai heo 500g                   71.500           71.500     (b)
+ 6  SUA001       8931003000266  Sữa tươi tiệt trùng có đường 1L         34.000           34.000
+ 7  SUA002       8931003000273  Sữa tươi tiệt trùng không đường 1L      35.500           35.500     (b)
+ 8  SUA007       8931003000327  Phô mai lát 200g                        62.000           60.000     (c)
+ 9  SUA010       8931003000358  Sữa hạt óc chó 1L                       49.000           49.000
+10  SUATE005     8931004000401  Sữa công thức pha sẵn 180ml lốc 4       72.000           72.000     (d)
+11  DOKHO003     8931005000431  Mì gói tôm chua cay thùng 30            115.000          115.000
+12  DOKHO012     8931005000523  Thịt hộp heo 170g                       35.000           35.000
+13  GIAVI005     8931006000577  Đường tinh luyện 1kg                    28.000           27.000     (c)
+14  GIAVI011     8931006000638  Dầu hào 350g                            30.500           30.500     (b)
+15  DOUONG003    8931007000668  Thùng nước tinh khiết 24 chai 500ml     95.000           95.000
+16  DOUONG012    8931007000750  Bia lon 330ml                           18.000           18.000     (b)
+17  BANH002      8931009000826  Bánh xốp phô mai 200g                   28.000           27.000     (c)
+18  BANH008      8931009000888  Socola sữa 100g                         35.000           35.000
+19  THUOCLA001   8931012001100  Thuốc lá điếu bao 20 điếu (loại A)      32.000           32.000     (d)
+20  DICHVU002    8931013001147  Thẻ nạp điện thoại 100.000đ             100.000          100.000    (e)
+
+(a) Có bản giá mới 19.100đ ở trạng thái DRAFT (chờ duyệt, hiệu lực từ ngày mai). POS vẫn bán 18.000đ vì chỉ lấy giá đã duyệt và đang hiệu lực.
+(b) Đã tăng giá 5% từ 01/06/2026. POS lấy giá mới; bản giá cũ được đóng hiệu lực, vẫn xem được trong lịch sử giá.
+(c) HM003 có giá riêng thấp hơn khoảng 3%. Giá riêng cửa hàng được ưu tiên hơn giá toàn chuỗi.
+(d) Hàng hạn chế khuyến mại theo BRL-05 (sữa cho trẻ dưới 24 tháng, thuốc lá). Giỏ hàng hiện nhãn đỏ; không tích điểm và không được trừ bằng điểm.
+(e) Thẻ nạp: không tích điểm theo quyết định của HMM (Q-06).
+
+
+4. 10 LƯỢT THANH TOÁN (khách vãng lai)
+---------------------------------------------------------------------
+Cách làm mỗi lượt:
+  1) Quét các mã vạch theo bảng. Quét lại cùng mã thì số lượng +1; cũng có thể sửa số lượng trong ô SL.
+  2) Bấm "Thanh toán (F9)".
+  3) Nhập "Tiền khách đưa" hoặc bấm nút mệnh giá gợi ý.
+  4) Bấm "Hoàn tất hóa đơn" (hoặc Enter).
+  5) Kiểm tra hóa đơn hiện ra, rồi bấm "Hóa đơn mới" (Enter).
+
+"Giá trị tính điểm" là phần sẽ được tích điểm khi gắn thành viên (từ B7); đã bỏ hàng hạn chế khuyến mại và thẻ nạp.
+
+--- Thu ngân 1: tn.hm001.1 · quầy HM001-Q01 ---
+KH01  Sữa tươi có đường x2, Cải ngọt x1, Thịt ba chỉ x1
+      8931003000266 (2 lần), 8931001000015, 8931002000144
+      Tổng 161.000 · Khách đưa 200.000 · Tiền thừa 39.000 · Giá trị tính điểm 161.000
+KH02  Mì thùng x1, Thùng nước x1, Thịt hộp x3
+      8931005000431, 8931007000668, 8931005000523 (3 lần)
+      Tổng 315.000 · Khách đưa 500.000 · Tiền thừa 185.000 · Giá trị tính điểm 315.000
+KH03  Thuốc lá x2, Bia lon x6, Socola x1
+      8931012001100 (2 lần), 8931007000750 (sửa SL = 6), 8931009000888
+      Tổng 207.000 · Khách đưa 210.000 · Tiền thừa 3.000 · Giá trị tính điểm 143.000 (thuốc lá bị loại)
+      → Hóa đơn in dấu * cạnh thuốc lá: "Mặt hàng không tích điểm".
+KH04  Thẻ nạp 100.000 x1, Sữa tươi không đường x2
+      8931013001147, 8931003000273 (2 lần)
+      Tổng 171.000 · Khách đưa 171.000 (bấm nút đúng số tiền) · Tiền thừa 0 · Giá trị tính điểm 71.000
+
+--- Thu ngân 2: tn.hm002.1 · quầy HM002-Q01 (cần mở ca) ---
+KH05  Cà chua bi x1, Thịt nạc vai x1, Dầu hào x1   (cả 3 đều là giá mới sau đợt tăng giá)
+      8931001000039, 8931002000151, 8931006000638
+      Tổng 135.500 · Khách đưa 150.000 · Tiền thừa 14.500 · Giá trị tính điểm 135.500
+KH06  Sữa pha sẵn cho trẻ x2, Sữa hạt óc chó x1, Socola x1
+      8931004000401 (2 lần), 8931003000358, 8931009000888
+      Tổng 228.000 · Khách đưa 250.000 · Tiền thừa 22.000 · Giá trị tính điểm 84.000 (sữa cho trẻ bị loại)
+KH07  Cải ngọt x3, Đường x1, Bánh xốp x2
+      8931001000015 (3 lần), 8931006000577, 8931009000826 (2 lần)
+      Tổng 138.000 · Khách đưa 200.000 · Tiền thừa 62.000 · Giá trị tính điểm 138.000
+      → So với KH08: cùng mặt hàng nhưng HM002 dùng giá toàn chuỗi.
+
+--- Thu ngân 3: tn.hm003.1 · quầy HM003-Q01 (cần mở ca) ---
+KH08  Hành tây x2, Đường x1, Bánh xốp x2   (cả 3 có giá riêng HM003)
+      8931001000077 (2 lần), 8931006000577, 8931009000826 (2 lần)
+      Tổng 110.000 · Khách đưa 110.000 · Tiền thừa 0 · Giá trị tính điểm 110.000
+      (Nếu bán ở HM001/HM002 thì tổng là 114.000.)
+KH09  Phô mai lát x1, Sữa tươi có đường x1, Thùng nước x1
+      8931003000327, 8931003000266, 8931007000668
+      Tổng 189.000 · Khách đưa 200.000 · Tiền thừa 11.000 · Giá trị tính điểm 189.000
+KH10  Thịt ba chỉ x2, Thịt nạc vai x1, Cà chua bi x1, Mì thùng x1
+      8931002000144 (2 lần), 8931002000151, 8931001000039, 8931005000431
+      Tổng 370.000 · Khách đưa 500.000 · Tiền thừa 130.000 · Giá trị tính điểm 370.000
+
+Sau 10 lượt, đóng ca từng quầy để xem đối chiếu tiền mặt:
+  HM001-Q01: tiền mặt bán được tăng thêm 854.000
+  HM002-Q01: tiền mặt bán được 501.500
+  HM003-Q01: tiền mặt bán được 669.000
+Thử nhập tiền thực đếm lệch so với hệ thống để xem cảnh báo chênh lệch.
+
+Các trường hợp lỗi nên thử thêm:
+  - Gõ "khongcohang" rồi Enter → "Không tìm thấy mặt hàng".
+  - Nhập tiền khách đưa nhỏ hơn số phải trả → nút Hoàn tất bị khóa, hiện "Còn thiếu".
+  - Tắt backend rồi bấm thanh toán → "Không kết nối được máy chủ...". Giỏ hàng vẫn giữ nguyên, bật lại backend rồi bấm lại.
+  - Đóng ca ở tab khác rồi thanh toán → "Ca bán hàng chưa mở hoặc đã đóng".
+
+
+5. KHI BẤM "HOÀN TẤT HÓA ĐƠN" – ĐIỀU GÌ XẢY RA
+=====================================================================
+
+5.1 Trên màn hình POS
+---------------------------------------------------------------------
+1) Nút chuyển sang trạng thái đang xử lý. Frontend gửi 1 yêu cầu POST /api/pos/sales gồm:
+   - terminalId, shiftId;
+   - receiptNo: mã hóa đơn do quầy sinh, ví dụ HM001-Q01-261112-091149183;
+   - danh sách dòng hàng: chỉ productId và quantity, không gửi giá;
+   - cashTendered: tiền khách đưa.
+   Từ B7, yêu cầu có thêm customerId và redemptionId nếu có.
+2) Thành công:
+   - hộp thanh toán đóng;
+   - hiện "Hoàn tất hóa đơn" kèm tiền thừa và hóa đơn xem trước dạng in nhiệt, gồm: cửa hàng, số HĐ, giờ, quầy, thu ngân, dòng hàng, tổng, tiền mặt, khách đưa, tiền thừa, dấu * cho hàng không tích điểm;
+   - thanh trên cùng cập nhật số hóa đơn của ca.
+3) Thất bại: hộp thanh toán vẫn mở, hiện thông báo lỗi tiếng Việt từ backend, giỏ hàng giữ nguyên để thử lại.
+   Thử lại dùng cùng receiptNo, nên nếu lần trước thực ra đã lưu thì backend trả lại đúng hóa đơn cũ, không tạo hóa đơn trùng.
+4) Bấm "Hóa đơn mới": xóa giỏ, sinh receiptNo mới, con trỏ về ô quét.
+
+5.2 Thay đổi trong CSDL (database hmm_loyalty)
+---------------------------------------------------------------------
+Mọi thao tác ghi chạy trong MỘT giao dịch CSDL: lỗi ở bất kỳ bước nào thì không bảng nào bị ghi dở.
+
+a) Hóa đơn khách vãng lai (B6), ví dụ KH01:
+   pos.sales_transactions   +1 dòng
+      receipt_no (duy nhất – khóa chống trùng), store_id, terminal_id, shift_id, cashier_id,
+      customer_id = NULL, txn_type = SALE, status = COMPLETED, source = POS,
+      txn_time = giờ bán, net_amount = 161000,
+      eligible_amount / points_earned / points_redeemed = NULL (không có thành viên)
+   pos.transaction_lines    +3 dòng (mỗi mặt hàng một dòng)
+      product_id, quantity, unit_price (giá tại thời điểm bán, do backend lấy),
+      line_amount, point_eligible (false với hàng hạn chế khuyến mại / thẻ nạp)
+   pos.payments             +1 dòng: method = CASH, amount = 161000, reference = "tendered=200000"
+   pos.shifts               KHÔNG đổi ngay. Tiền mặt của ca được tính lại từ payments khi xem ca và khi đóng ca.
+                            Khi đóng ca mới ghi closed_at, expected_cash, counted_cash, cash_difference.
+
+b) Hóa đơn có thành viên (từ B7; backend đã làm sẵn):
+   customer.customers       point_balance cộng điểm; spend_12m cộng tổng tiền; tier_code đổi nếu đủ ngưỡng lên hạng
+   loyalty.point_lots       +1 lô điểm: points_earned, points_remaining, expires_at = cuối tháng thứ 12
+   loyalty.point_ledgers    +1 bút toán EARN (+điểm, balance_after); bảng này chỉ ghi thêm, có trigger chặn sửa/xóa
+   loyalty.tier_histories   +1 dòng UPGRADE nếu lên hạng
+   shared.outbox_messages   +1 tin SMS_TIER chúc mừng lên hạng (SMS giả lập)
+   pos.sales_transactions   eligible_amount, points_earned, points_redeemed được điền
+   Nếu có đổi điểm (đã giữ điểm sau khi OTP đúng):
+   loyalty.point_redemptions  HELD → CONFIRMED, gắn transaction_id
+   loyalty.point_ledgers      RELEASE (+điểm đang giữ), rồi REDEEM (−điểm) theo từng lô FIFO
+   loyalty.point_lots         points_remaining giảm từ lô cũ nhất
+   pos.payments               thêm dòng method = POINTS (amount = điểm × 100đ); dòng CASH = phần còn lại
+
+c) Câu lệnh kiểm tra sau khi test (pgAdmin hoặc psql):
+   -- 10 hóa đơn mới nhất
+   SELECT receipt_no, store_id, terminal_id, shift_id, customer_id, net_amount, txn_time
+   FROM pos.sales_transactions ORDER BY transaction_id DESC LIMIT 10;
+   -- dòng hàng và thanh toán của 1 hóa đơn
+   SELECT l.*, p.name FROM pos.transaction_lines l JOIN catalog.products p USING (product_id)
+   WHERE transaction_id = (SELECT max(transaction_id) FROM pos.sales_transactions);
+   SELECT * FROM pos.payments WHERE transaction_id = (SELECT max(transaction_id) FROM pos.sales_transactions);
+   -- ca hôm nay của các quầy
+   SELECT * FROM pos.shifts WHERE opened_at::date = current_date ORDER BY shift_id;
+   -- (từ B7) số dư luôn bằng tổng sổ cái: kết quả phải là 0
+   SELECT count(*) FROM customer.customers c
+   WHERE point_balance <> (SELECT COALESCE(sum(points),0) FROM loyalty.point_ledgers g WHERE g.customer_id = c.customer_id);
+
+5.3 Luồng dữ liệu trong code (từ nút bấm tới CSDL)
+---------------------------------------------------------------------
+Dự án không dùng JPA Repository. Mỗi Service viết SQL trực tiếp bằng Spring JdbcClient, nên Service vừa là tầng nghiệp vụ vừa đảm nhiệm vai trò repository.
+Cấu trúc bảng do Flyway tạo từ file migration.
+
+[FRONTEND – frontend/src]
+ 1. pos/PaymentModal.tsx      Nút "Hoàn tất hóa đơn" gọi onConfirm(cashTendered).
+ 2. pos/SaleScreen.tsx        Hàm checkout(): dựng body { terminalId, shiftId, receiptNo, lines[], cashTendered }.
+                              receiptNo sinh bởi newReceiptNo() theo dạng mã quầy-ngày-giờ.
+ 3. shared/api.ts             api(): gắn header "Authorization: Bearer <token POS>" (lấy từ shared/session.ts),
+                              gửi fetch POST /api/pos/sales, đổi lỗi {code, message} thành ApiError.
+ 4. vite.config.ts            Proxy /api → http://localhost:8080. Chỉ dùng khi chạy dev; khi chạy Docker thì nginx làm việc này.
+ 5. Nhận kết quả → pos/ReceiptView.tsx hiển thị hóa đơn; PosShell.tsx gọi lại loadShift() để cập nhật số hóa đơn của ca.
+
+[BACKEND – backend/src/main/java/vn/sofitech/hmm]
+ 6. admin/SecurityConfig.java       Bộ lọc Spring Security kiểm tra JWT (HS256).
+                                    /api/pos/** chỉ cho vai trò CASHIER, STORE_MANAGER; sai thì trả 401/403.
+ 7. pos/PosController.java          @PostMapping("/sales") checkout(): nhận SaleRequest; lấy người dùng từ JWT qua admin/CurrentUser.java (uid, role, storeId).
+ 8. pos/SaleService.java            checkout() có @Transactional – toàn bộ các bước sau nằm trong một giao dịch:
+    8.1 Chống trùng: receipt_no đã tồn tại thì trả lại hóa đơn cũ (receipt()).
+    8.2 ShiftService.checkTerminal(): quầy phải thuộc cửa hàng của thu ngân.
+        ShiftService.current(): ca phải đang mở và đúng shiftId.
+    8.3 price() → catalog/CatalogService.sellableByIds(): đọc catalog.products, categories, product_barcodes, product_prices.
+        Lấy giá ĐANG hiệu lực, đã duyệt; giá riêng cửa hàng ưu tiên hơn giá toàn chuỗi (câu SQL CURRENT_PRICE).
+        Tính line_amount; đánh dấu point_eligible.
+        Giá luôn do backend tính lại, không tin giá gửi từ máy quầy.
+    8.4 Nếu có customerId: customer/CustomerService.findById() (từ B7).
+    8.5 INSERT pos.sales_transactions, rồi INSERT pos.transaction_lines cho từng dòng.
+    8.6 Nếu có redemptionId (từ B7): loyalty/RedemptionService.confirm() → loyalty/LedgerService.redeem();
+        INSERT pos.payments (POINTS); kiểm tra không vượt 50% giá trị hàng được đổi điểm.
+    8.7 Kiểm tra tiền khách đưa ≥ phần phải trả; INSERT pos.payments (CASH).
+    8.8 Nếu có thành viên (từ B7):
+        - loyalty/LoyaltyConfigService: lấy chính sách điểm và hệ số hạng;
+        - loyalty/PointCalculator.earnedPoints(): floor(floor(giá trị tính điểm / 10.000) × hệ số hạng);
+        - loyalty/LedgerService.earn(): INSERT point_lots + point_ledgers, UPDATE customers.point_balance;
+        - loyalty/TierService.afterSale(): cộng spend_12m, lên hạng, ghi tier_histories,
+          gọi shared/OutboxService.enqueueSms() ghi tin SMS_TIER.
+    8.9 UPDATE pos.sales_transactions: điền eligible_amount, points_earned, points_redeemed.
+    8.10 receipt(): đọc lại hóa đơn (JOIN stores, pos_terminals, app_users, customers, tiers), dòng hàng, thanh toán → trả JSON.
+ 9. shared/GlobalExceptionHandler.java
+        ApiException → HTTP 400/403/404/409 kèm {code, message} tiếng Việt.
+        Có lỗi thì giao dịch rollback, không ghi gì.
+10. Tác vụ nền (không chạy trong lúc bấm thanh toán):
+        - shared/OutboxService.mockSend(): 3 giây/lần đánh dấu SMS đã gửi;
+        - loyalty/RedemptionService.expireHolds(): 30 giây/lần trả điểm giữ quá 15 phút;
+        - loyalty/TierService.dailyReview(): 2 giờ sáng xét hạng.
+
+[CÁC FILE CẤU HÌNH LIÊN QUAN]
+ backend/pom.xml                                    Thư viện: Spring Boot 4.0.9, starter-jdbc, security + oauth2-resource-server (JWT), flyway, postgresql, springdoc, spring-modulith (test)
+ backend/src/main/resources/application.yml         Kết nối CSDL (DB_HOST/DB_NAME/DB_USER/DB_PASSWORD), cổng 8080, khóa JWT, thời hạn token 12 giờ, nơi lưu OTP (memory), bật dữ liệu mẫu, CORS
+ backend/local.properties                           Mật khẩu PostgreSQL của máy bạn (DB_PASSWORD=...), không đưa lên git
+ backend/src/main/resources/application-docker.yml  Cấu hình khi chạy Docker (Redis lưu OTP) – dùng ở B11
+ backend/src/main/resources/db/migration/V1__schema.sql   Flyway tạo 26 bảng, các index, trigger chặn sửa sổ cái, ràng buộc 1 ca mở / quầy
+ backend/src/main/java/vn/sofitech/hmm/admin/SecurityConfig.java      Phân quyền URL, bộ mã hóa/giải mã JWT, bcrypt, CORS
+ backend/src/main/java/vn/sofitech/hmm/HmmLoyaltyApplication.java     Điểm khởi động, bật @EnableScheduling, múi giờ Asia/Ho_Chi_Minh
+ frontend/vite.config.ts                            Cổng 5173, proxy /api → 8080
+ frontend/package.json                              Thư viện frontend: React 19, Ant Design 6, react-router, dayjs, recharts
+ frontend/src/main.tsx                              Giao diện tiếng Việt (vi_VN), màu chủ đạo, Router

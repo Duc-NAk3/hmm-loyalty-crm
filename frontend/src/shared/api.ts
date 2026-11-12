@@ -46,7 +46,10 @@ export async function api<T = unknown>(path: string, opts: Options = {}): Promis
   const text = await res.text()
   const data = text ? safeJson(text) : null
   if (!res.ok) {
-    const d = (data ?? {}) as { code?: string; message?: string }
+    const d = (data && typeof data === 'object' ? data : {}) as { code?: string; message?: string }
+    // Proxy của Vite trả 5xx không có nội dung khi backend tắt
+    if (res.status >= 500 && !d.message)
+      throw new ApiError(res.status, 'NETWORK', 'Không kết nối được máy chủ. Kiểm tra backend đã chạy chưa.')
     throw new ApiError(res.status, d.code ?? 'HTTP_' + res.status,
       d.message ?? (res.status === 403 ? 'Bạn không có quyền thực hiện thao tác này' : `Lỗi ${res.status}`))
   }
