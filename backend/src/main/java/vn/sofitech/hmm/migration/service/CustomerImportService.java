@@ -1,5 +1,8 @@
 package vn.sofitech.hmm.migration.service;
 
+import vn.sofitech.hmm.migration.dto.customerimport.ErrorView;
+import vn.sofitech.hmm.migration.dto.customerimport.ImportResult;
+import vn.sofitech.hmm.migration.dto.customerimport.BatchView;
 import vn.sofitech.hmm.migration.repository.CustomerSourceRecordRepository;
 import vn.sofitech.hmm.migration.repository.ImportBatchRepository;
 import vn.sofitech.hmm.migration.repository.ImportErrorRepository;
@@ -10,9 +13,6 @@ import vn.sofitech.hmm.admin.AdminFacade;
 import vn.sofitech.hmm.customer.CustomerFacade;
 import vn.sofitech.hmm.customer.CustomerFacade.CustomerInfo;
 import vn.sofitech.hmm.migration.domain.*;
-import vn.sofitech.hmm.migration.web.MigrationDtos.BatchView;
-import vn.sofitech.hmm.migration.web.MigrationDtos.ErrorView;
-import vn.sofitech.hmm.migration.web.MigrationDtos.ImportResult;
 import vn.sofitech.hmm.shared.ApiException;
 import vn.sofitech.hmm.shared.AuditService;
 import vn.sofitech.hmm.shared.Texts;

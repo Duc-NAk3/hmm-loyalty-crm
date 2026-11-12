@@ -1,5 +1,11 @@
 package vn.sofitech.hmm.admin.web;
 
+import vn.sofitech.hmm.admin.dto.store.StoreView;
+import vn.sofitech.hmm.admin.dto.user.RoleView;
+import vn.sofitech.hmm.admin.dto.user.UserView;
+import vn.sofitech.hmm.admin.dto.user.UserRequest;
+import vn.sofitech.hmm.admin.dto.user.StatusRequest;
+import vn.sofitech.hmm.admin.dto.common.IdResponse;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -7,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import vn.sofitech.hmm.admin.AdminFacade.TerminalInfo;
 import vn.sofitech.hmm.admin.CurrentUser;
 import vn.sofitech.hmm.admin.service.UserAdminService;
-import vn.sofitech.hmm.admin.web.AdminDtos.*;
 
 import java.util.List;
 
@@ -54,7 +59,7 @@ public class AdminController {
 
     @PostMapping("/api/portal/users/{id}/status")
     public IdResponse setStatus(@PathVariable long id, @Valid @RequestBody StatusRequest req, @AuthenticationPrincipal Jwt jwt) {
-        service.setStatus(id, req.status(), CurrentUser.of(jwt));
+        service.setStatus(id, req.getStatus(), CurrentUser.of(jwt));
         return new IdResponse(id);
     }
 }

@@ -1,5 +1,9 @@
 package vn.sofitech.hmm.migration.web;
 
+import vn.sofitech.hmm.migration.dto.vendor.VendorView;
+import vn.sofitech.hmm.migration.dto.customerimport.ErrorView;
+import vn.sofitech.hmm.migration.dto.customerimport.ImportResult;
+import vn.sofitech.hmm.migration.dto.customerimport.BatchView;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
@@ -7,7 +11,6 @@ import org.springframework.web.multipart.MultipartFile;
 import vn.sofitech.hmm.admin.CurrentUser;
 import vn.sofitech.hmm.migration.service.CustomerImportService;
 import vn.sofitech.hmm.migration.service.VendorFormat;
-import vn.sofitech.hmm.migration.web.MigrationDtos.*;
 import vn.sofitech.hmm.shared.ApiException;
 
 import java.io.IOException;

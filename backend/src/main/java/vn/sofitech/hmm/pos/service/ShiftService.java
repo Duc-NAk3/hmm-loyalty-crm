@@ -1,5 +1,7 @@
 package vn.sofitech.hmm.pos.service;
 
+import vn.sofitech.hmm.pos.dto.shift.ShiftView;
+import vn.sofitech.hmm.pos.dto.shift.CloseShiftResult;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.sofitech.hmm.admin.AdminFacade;
@@ -8,8 +10,6 @@ import vn.sofitech.hmm.admin.CurrentUser;
 import vn.sofitech.hmm.pos.repository.SalesTransactionRepository;
 import vn.sofitech.hmm.pos.domain.Shift;
 import vn.sofitech.hmm.pos.repository.ShiftRepository;
-import vn.sofitech.hmm.pos.web.PosDtos.CloseShiftResult;
-import vn.sofitech.hmm.pos.web.PosDtos.ShiftView;
 import vn.sofitech.hmm.shared.ApiException;
 import vn.sofitech.hmm.shared.Texts;
 

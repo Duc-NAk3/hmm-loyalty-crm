@@ -1,5 +1,9 @@
 package vn.sofitech.hmm.loyalty.web;
 
+import vn.sofitech.hmm.loyalty.dto.member.MemberSummary;
+import vn.sofitech.hmm.loyalty.dto.member.RegisterMemberRequest;
+import vn.sofitech.hmm.loyalty.dto.tier.TiersResponse;
+import vn.sofitech.hmm.loyalty.dto.tier.TierReviewResponse;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -10,7 +14,6 @@ import vn.sofitech.hmm.customer.CustomerFacade;
 import vn.sofitech.hmm.loyalty.service.LoyaltyConfigService;
 import vn.sofitech.hmm.loyalty.service.MemberService;
 import vn.sofitech.hmm.loyalty.service.TierService;
-import vn.sofitech.hmm.loyalty.web.LoyaltyDtos.*;
 import vn.sofitech.hmm.shared.ApiException;
 import vn.sofitech.hmm.shared.Texts;
 
@@ -38,9 +41,9 @@ public class MemberController {
     }
 
     @PostMapping("/api/pos/members")
-    public MemberSummary register(@Valid @RequestBody RegisterRequest req, @AuthenticationPrincipal Jwt jwt) {
+    public MemberSummary register(@Valid @RequestBody RegisterMemberRequest req, @AuthenticationPrincipal Jwt jwt) {
         CurrentUser u = CurrentUser.of(jwt);
-        return members.summary(customers.registerAtPos(req.phone(), req.fullName(), req.gender(), req.dateOfBirth(),
+        return members.summary(customers.registerAtPos(req.getPhone(), req.getFullName(), req.getGender(), req.getDateOfBirth(),
                 req.consentsToMarketing(), u.storeId(), u.id()));
     }
 

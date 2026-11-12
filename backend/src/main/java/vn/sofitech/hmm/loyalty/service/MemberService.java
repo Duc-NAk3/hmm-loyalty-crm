@@ -1,13 +1,13 @@
 package vn.sofitech.hmm.loyalty.service;
 
+import vn.sofitech.hmm.loyalty.dto.member.MemberSummary;
+import vn.sofitech.hmm.loyalty.dto.tier.TierView;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.sofitech.hmm.customer.CustomerFacade;
 import vn.sofitech.hmm.customer.CustomerFacade.CustomerInfo;
 import vn.sofitech.hmm.loyalty.PointCalculator;
 import vn.sofitech.hmm.loyalty.repository.PointLotRepository;
-import vn.sofitech.hmm.loyalty.web.LoyaltyDtos.MemberSummary;
-import vn.sofitech.hmm.loyalty.web.LoyaltyDtos.TierView;
 import vn.sofitech.hmm.shared.Texts;
 
 import java.time.OffsetDateTime;

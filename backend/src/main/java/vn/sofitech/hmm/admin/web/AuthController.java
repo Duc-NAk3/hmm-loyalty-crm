@@ -1,13 +1,13 @@
 package vn.sofitech.hmm.admin.web;
 
+import vn.sofitech.hmm.admin.dto.auth.LoginRequest;
+import vn.sofitech.hmm.admin.dto.auth.LoginResponse;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import vn.sofitech.hmm.admin.CurrentUser;
 import vn.sofitech.hmm.admin.service.AuthService;
-import vn.sofitech.hmm.admin.web.AdminDtos.LoginRequest;
-import vn.sofitech.hmm.admin.web.AdminDtos.LoginResponse;
 
 /** Đăng nhập POS (kèm mã quầy) và Web Portal. */
 @RestController

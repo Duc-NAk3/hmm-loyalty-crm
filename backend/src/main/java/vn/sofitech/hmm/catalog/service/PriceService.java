@@ -1,5 +1,7 @@
 package vn.sofitech.hmm.catalog.service;
 
+import vn.sofitech.hmm.catalog.dto.price.PriceView;
+import vn.sofitech.hmm.catalog.dto.price.PendingPriceView;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.sofitech.hmm.admin.AdminFacade;
@@ -7,8 +9,6 @@ import vn.sofitech.hmm.catalog.domain.Product;
 import vn.sofitech.hmm.catalog.domain.ProductPrice;
 import vn.sofitech.hmm.catalog.repository.ProductPriceRepository;
 import vn.sofitech.hmm.catalog.repository.ProductRepository;
-import vn.sofitech.hmm.catalog.web.CatalogDtos.PendingPriceView;
-import vn.sofitech.hmm.catalog.web.CatalogDtos.PriceView;
 import vn.sofitech.hmm.shared.ApiException;
 import vn.sofitech.hmm.shared.AuditService;
 import vn.sofitech.hmm.shared.Texts;

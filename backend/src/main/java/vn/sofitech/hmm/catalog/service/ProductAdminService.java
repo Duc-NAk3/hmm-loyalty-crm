@@ -1,5 +1,9 @@
 package vn.sofitech.hmm.catalog.service;
 
+import vn.sofitech.hmm.catalog.dto.category.CategoryView;
+import vn.sofitech.hmm.catalog.dto.product.ProductView;
+import vn.sofitech.hmm.catalog.dto.product.ProductInput;
+import vn.sofitech.hmm.catalog.dto.product.ImportResult;
 import vn.sofitech.hmm.catalog.repository.CategoryRepository;
 import vn.sofitech.hmm.catalog.repository.ProductBarcodeRepository;
 import vn.sofitech.hmm.catalog.repository.ProductPriceRepository;
@@ -10,7 +14,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.sofitech.hmm.catalog.domain.*;
-import vn.sofitech.hmm.catalog.web.CatalogDtos.*;
 import vn.sofitech.hmm.shared.ApiException;
 import vn.sofitech.hmm.shared.AuditService;
 import vn.sofitech.hmm.shared.PageResult;
@@ -75,22 +78,22 @@ public class ProductAdminService {
 
     @Transactional
     public long save(Long productId, ProductInput in, long userId) {
-        if (Texts.isBlank(in.sku()) || Texts.isBlank(in.name()) || Texts.isBlank(in.unit()))
+        if (Texts.isBlank(in.getSku()) || Texts.isBlank(in.getName()) || Texts.isBlank(in.getUnit()))
             throw ApiException.badRequest("PRODUCT", "Mã hàng, tên hàng và đơn vị tính là bắt buộc");
-        Category category = categories.findById(in.categoryId()).orElseThrow(() -> ApiException.badRequest("CATEGORY", "Ngành hàng không tồn tại"));
-        List<String> codes = in.barcodes() == null ? List.of()
-                : in.barcodes().stream().map(String::trim).filter(s -> !s.isEmpty()).distinct().toList();
+        Category category = categories.findById(in.getCategoryId()).orElseThrow(() -> ApiException.badRequest("CATEGORY", "Ngành hàng không tồn tại"));
+        List<String> codes = in.getBarcodes() == null ? List.of()
+                : in.getBarcodes().stream().map(String::trim).filter(s -> !s.isEmpty()).distinct().toList();
         for (String code : codes)
             barcodes.findById(code).filter(b -> !b.getProduct().getId().equals(productId)).ifPresent(b -> {
                 throw ApiException.conflict("BARCODE", "Mã vạch " + code + " đã thuộc mặt hàng khác");
             });
-        BigDecimal vat = in.vatRate() == null ? BigDecimal.valueOf(8) : in.vatRate();
+        BigDecimal vat = in.getVatRate() == null ? BigDecimal.valueOf(8) : in.getVatRate();
         Product p;
         if (productId == null) {
-            p = new Product(in.sku().trim(), in.name().trim(), in.unit().trim(), category, vat, in.promoRestricted(), in.pointExcluded());
+            p = new Product(in.getSku().trim(), in.getName().trim(), in.getUnit().trim(), category, vat, in.isPromoRestricted(), in.isPointExcluded());
         } else {
             p = products.findById(productId).orElseThrow(() -> ApiException.notFound("Không tìm thấy mặt hàng"));
-            p.update(in.sku().trim(), in.name().trim(), in.unit().trim(), category, vat, in.promoRestricted(), in.pointExcluded(), in.status());
+            p.update(in.getSku().trim(), in.getName().trim(), in.getUnit().trim(), category, vat, in.isPromoRestricted(), in.isPointExcluded(), in.getStatus());
         }
         p.replaceBarcodes(codes);
         p = products.save(p);

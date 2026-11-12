@@ -1,5 +1,14 @@
 package vn.sofitech.hmm.catalog.web;
 
+import vn.sofitech.hmm.catalog.dto.category.CategoryView;
+import vn.sofitech.hmm.catalog.dto.product.ProductView;
+import vn.sofitech.hmm.catalog.dto.product.ProductInput;
+import vn.sofitech.hmm.catalog.dto.product.ImportResult;
+import vn.sofitech.hmm.catalog.dto.price.PriceView;
+import vn.sofitech.hmm.catalog.dto.price.PendingPriceView;
+import vn.sofitech.hmm.catalog.dto.price.PriceRequest;
+import vn.sofitech.hmm.catalog.dto.common.IdResponse;
+import vn.sofitech.hmm.catalog.dto.price.StatusResponse;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -10,7 +19,6 @@ import vn.sofitech.hmm.catalog.CatalogFacade.SellableProduct;
 import vn.sofitech.hmm.catalog.service.CatalogService;
 import vn.sofitech.hmm.catalog.service.PriceService;
 import vn.sofitech.hmm.catalog.service.ProductAdminService;
-import vn.sofitech.hmm.catalog.web.CatalogDtos.*;
 import vn.sofitech.hmm.shared.ApiException;
 import vn.sofitech.hmm.shared.PageResult;
 
@@ -82,7 +90,7 @@ public class CatalogController {
     @PostMapping("/api/portal/products/{id}/prices")
     @PreAuthorize("hasAnyRole('CATALOG','ADMIN')")
     public IdResponse newPrice(@PathVariable long id, @RequestBody PriceRequest req, @AuthenticationPrincipal Jwt jwt) {
-        return new IdResponse(priceService.create(id, req.storeId(), req.price(), req.effectiveFrom(), CurrentUser.of(jwt).id()));
+        return new IdResponse(priceService.create(id, req.getStoreId(), req.getPrice(), req.getEffectiveFrom(), CurrentUser.of(jwt).id()));
     }
 
     @GetMapping("/api/portal/prices/pending")

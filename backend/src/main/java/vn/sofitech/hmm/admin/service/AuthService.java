@@ -1,5 +1,8 @@
 package vn.sofitech.hmm.admin.service;
 
+import vn.sofitech.hmm.admin.dto.auth.LoginRequest;
+import vn.sofitech.hmm.admin.dto.auth.SessionUser;
+import vn.sofitech.hmm.admin.dto.auth.LoginResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,9 +18,6 @@ import vn.sofitech.hmm.admin.domain.AppUser;
 import vn.sofitech.hmm.admin.repository.AppUserRepository;
 import vn.sofitech.hmm.admin.domain.PosTerminal;
 import vn.sofitech.hmm.admin.repository.PosTerminalRepository;
-import vn.sofitech.hmm.admin.web.AdminDtos.LoginRequest;
-import vn.sofitech.hmm.admin.web.AdminDtos.LoginResponse;
-import vn.sofitech.hmm.admin.web.AdminDtos.SessionUser;
 import vn.sofitech.hmm.shared.ApiException;
 import vn.sofitech.hmm.shared.Texts;
 
@@ -47,18 +47,18 @@ public class AuthService {
 
     @Transactional
     public LoginResponse login(LoginRequest req) {
-        AppUser u = users.findByUsernameIgnoreCase(req.username().trim())
-                .filter(x -> encoder.matches(req.password(), x.getPasswordHash()))
+        AppUser u = users.findByUsernameIgnoreCase(req.getUsername().trim())
+                .filter(x -> encoder.matches(req.getPassword(), x.getPasswordHash()))
                 .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "BAD_LOGIN", "Sai tên đăng nhập hoặc mật khẩu"));
         if (!u.isActive()) throw new ApiException(HttpStatus.UNAUTHORIZED, "LOCKED", "Tài khoản đã bị khóa");
         String role = u.getRole().getCode();
         Long storeId = u.getStore() == null ? null : u.getStore().getId();
 
         TerminalInfo terminal = null;
-        if (req.terminalCode() != null && !req.terminalCode().isBlank()) {
+        if (req.getTerminalCode() != null && !req.getTerminalCode().isBlank()) {
             // Đăng nhập POS: thu ngân phải thuộc cửa hàng của quầy
             if (!List.of("CASHIER", "STORE_MANAGER").contains(role)) throw ApiException.forbidden("Tài khoản này không được dùng POS");
-            PosTerminal t = terminals.findByTerminalCodeAndStatus(req.terminalCode(), "ACTIVE")
+            PosTerminal t = terminals.findByTerminalCodeAndStatus(req.getTerminalCode(), "ACTIVE")
                     .orElseThrow(() -> ApiException.badRequest("BAD_TERMINAL", "Quầy chưa được đăng ký"));
             if (storeId == null || !storeId.equals(t.getStore().getId()))
                 throw ApiException.forbidden("Thu ngân không thuộc cửa hàng của quầy này");

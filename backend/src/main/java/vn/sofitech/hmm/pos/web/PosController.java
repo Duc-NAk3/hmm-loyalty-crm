@@ -1,5 +1,16 @@
 package vn.sofitech.hmm.pos.web;
 
+import vn.sofitech.hmm.pos.dto.shift.ShiftView;
+import vn.sofitech.hmm.pos.dto.shift.OpenShiftRequest;
+import vn.sofitech.hmm.pos.dto.shift.CloseShiftRequest;
+import vn.sofitech.hmm.pos.dto.shift.CloseShiftResult;
+import vn.sofitech.hmm.pos.dto.sale.SaleRequest;
+import vn.sofitech.hmm.pos.dto.sale.ReceiptView;
+import vn.sofitech.hmm.pos.dto.redemption.QuoteRequest;
+import vn.sofitech.hmm.pos.dto.redemption.QuoteResponse;
+import vn.sofitech.hmm.pos.dto.redemption.RedeemRequest;
+import vn.sofitech.hmm.pos.dto.redemption.VerifyRequest;
+import vn.sofitech.hmm.pos.dto.redemption.CancelRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -13,7 +24,6 @@ import vn.sofitech.hmm.loyalty.LoyaltyFacade.RedemptionRequested;
 import vn.sofitech.hmm.loyalty.PointCalculator;
 import vn.sofitech.hmm.pos.service.SaleService;
 import vn.sofitech.hmm.pos.service.ShiftService;
-import vn.sofitech.hmm.pos.web.PosDtos.*;
 import vn.sofitech.hmm.shared.ApiException;
 import vn.sofitech.hmm.shared.SmsOutbox;
 
@@ -48,12 +58,12 @@ public class PosController {
 
     @PostMapping("/shifts/open")
     public ShiftView open(@RequestBody OpenShiftRequest req, @AuthenticationPrincipal Jwt jwt) {
-        return shifts.open(CurrentUser.of(jwt), req.terminalId(), req.openingCash());
+        return shifts.open(CurrentUser.of(jwt), req.getTerminalId(), req.getOpeningCash());
     }
 
     @PostMapping("/shifts/{id}/close")
     public CloseShiftResult close(@PathVariable long id, @RequestBody CloseShiftRequest req, @AuthenticationPrincipal Jwt jwt) {
-        return shifts.close(CurrentUser.of(jwt), id, req.countedCash());
+        return shifts.close(CurrentUser.of(jwt), id, req.getCountedCash());
     }
 
     // ---------------- hóa đơn ----------------
@@ -67,31 +77,31 @@ public class PosController {
 
     @PostMapping("/redemptions/quote")
     public QuoteResponse quote(@RequestBody QuoteRequest req, @AuthenticationPrincipal Jwt jwt) {
-        long redeemable = SaleService.redeemableAmount(sales.price(req.lines(), CurrentUser.of(jwt).storeId()));
-        PointCalculator.RedeemQuote q = loyalty.quote(req.customerId(), redeemable);
+        long redeemable = SaleService.redeemableAmount(sales.price(req.getLines(), CurrentUser.of(jwt).storeId()));
+        PointCalculator.RedeemQuote q = loyalty.quote(req.getCustomerId(), redeemable);
         return new QuoteResponse(q.allowed(), q.maxPoints(), q.maxAmount(), q.reason(), redeemable);
     }
 
     @PostMapping("/redemptions")
     public RedemptionRequested request(@RequestBody RedeemRequest req, @AuthenticationPrincipal Jwt jwt) {
         CurrentUser u = CurrentUser.of(jwt);
-        shifts.checkTerminal(u, req.terminalId());
-        long redeemable = SaleService.redeemableAmount(sales.price(req.lines(), u.storeId()));
-        return loyalty.requestRedemption(req.customerId(), req.terminalId(), req.points(), redeemable);
+        shifts.checkTerminal(u, req.getTerminalId());
+        long redeemable = SaleService.redeemableAmount(sales.price(req.getLines(), u.storeId()));
+        return loyalty.requestRedemption(req.getCustomerId(), req.getTerminalId(), req.getPoints(), redeemable);
     }
 
     @PostMapping("/redemptions/{id}/verify")
     public RedemptionHeld verify(@PathVariable long id, @RequestBody VerifyRequest req, @AuthenticationPrincipal Jwt jwt) {
         CurrentUser u = CurrentUser.of(jwt);
-        shifts.checkTerminal(u, req.terminalId());
-        return loyalty.verifyOtp(id, req.terminalId(), req.otp(), u.id());
+        shifts.checkTerminal(u, req.getTerminalId());
+        return loyalty.verifyOtp(id, req.getTerminalId(), req.getOtp(), u.id());
     }
 
     @PostMapping("/redemptions/{id}/cancel")
     public RedemptionInfo cancel(@PathVariable long id, @RequestBody CancelRequest req, @AuthenticationPrincipal Jwt jwt) {
         CurrentUser u = CurrentUser.of(jwt);
-        shifts.checkTerminal(u, req.terminalId());
-        return loyalty.cancelRedemption(id, req.terminalId(), u.id());
+        shifts.checkTerminal(u, req.getTerminalId());
+        return loyalty.cancelRedemption(id, req.getTerminalId(), u.id());
     }
 
     /** Công cụ demo: "điện thoại của khách" – xem SMS giả lập gửi tới thành viên (OTP, chào mừng). */

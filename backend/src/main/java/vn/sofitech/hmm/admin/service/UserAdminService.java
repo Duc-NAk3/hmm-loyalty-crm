@@ -1,5 +1,9 @@
 package vn.sofitech.hmm.admin.service;
 
+import vn.sofitech.hmm.admin.dto.store.StoreView;
+import vn.sofitech.hmm.admin.dto.user.RoleView;
+import vn.sofitech.hmm.admin.dto.user.UserView;
+import vn.sofitech.hmm.admin.dto.user.UserRequest;
 import vn.sofitech.hmm.admin.repository.AppUserRepository;
 import vn.sofitech.hmm.admin.repository.PosTerminalRepository;
 import vn.sofitech.hmm.admin.repository.RoleRepository;
@@ -10,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import vn.sofitech.hmm.admin.AdminFacade.TerminalInfo;
 import vn.sofitech.hmm.admin.CurrentUser;
 import vn.sofitech.hmm.admin.domain.*;
-import vn.sofitech.hmm.admin.web.AdminDtos.*;
 import vn.sofitech.hmm.shared.ApiException;
 import vn.sofitech.hmm.shared.AuditService;
 
@@ -67,10 +70,10 @@ public class UserAdminService {
 
     @Transactional
     public long create(UserRequest req, CurrentUser me) {
-        if (req.password() == null) throw ApiException.badRequest("PASSWORD", "Cần nhập mật khẩu ban đầu (tối thiểu 6 ký tự)");
-        Role role = role(req.role());
-        Store store = store(req.role(), req.storeId());
-        AppUser u = users.save(new AppUser(req.username().trim(), encoder.encode(req.password()), req.fullName().trim(), req.phone(), role, store));
+        if (req.getPassword() == null) throw ApiException.badRequest("PASSWORD", "Cần nhập mật khẩu ban đầu (tối thiểu 6 ký tự)");
+        Role role = role(req.getRole());
+        Store store = store(req.getRole(), req.getStoreId());
+        AppUser u = users.save(new AppUser(req.getUsername().trim(), encoder.encode(req.getPassword()), req.getFullName().trim(), req.getPhone(), role, store));
         audit.log(me.id(), "CREATE_USER", "app_users", u.getId(), null, Map.of("username", u.getUsername(), "role", role.getCode()));
         return u.getId();
     }
@@ -78,10 +81,10 @@ public class UserAdminService {
     @Transactional
     public long update(long id, UserRequest req, CurrentUser me) {
         AppUser u = users.findById(id).orElseThrow(() -> ApiException.notFound("Không tìm thấy người dùng"));
-        Role role = role(req.role());
-        u.update(req.fullName().trim(), req.phone(), role, store(req.role(), req.storeId()));
-        if (req.password() != null && !req.password().isBlank()) u.changePassword(encoder.encode(req.password()));
-        audit.log(me.id(), "UPDATE_USER", "app_users", id, null, Map.of("role", role.getCode(), "storeId", String.valueOf(req.storeId())));
+        Role role = role(req.getRole());
+        u.update(req.getFullName().trim(), req.getPhone(), role, store(req.getRole(), req.getStoreId()));
+        if (req.getPassword() != null && !req.getPassword().isBlank()) u.changePassword(encoder.encode(req.getPassword()));
+        audit.log(me.id(), "UPDATE_USER", "app_users", id, null, Map.of("role", role.getCode(), "storeId", String.valueOf(req.getStoreId())));
         return id;
     }
 

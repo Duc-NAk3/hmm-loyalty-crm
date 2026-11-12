@@ -1,10 +1,21 @@
 package vn.sofitech.hmm.report.service;
 
+import vn.sofitech.hmm.report.dto.customer.CustomerRow;
+import vn.sofitech.hmm.report.dto.customer.Profile;
+import vn.sofitech.hmm.report.dto.customer.Stats;
+import vn.sofitech.hmm.report.dto.customer.TxnRow;
+import vn.sofitech.hmm.report.dto.customer.LedgerRow;
+import vn.sofitech.hmm.report.dto.customer.ConsentRow;
+import vn.sofitech.hmm.report.dto.customer.TierHistoryRow;
+import vn.sofitech.hmm.report.dto.customer.SourceRow;
+import vn.sofitech.hmm.report.dto.customer.Customer360View;
+import vn.sofitech.hmm.report.dto.customer.LineRow;
+import vn.sofitech.hmm.report.dto.customer.PhoneView;
+import vn.sofitech.hmm.report.dto.audit.AuditRow;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.sofitech.hmm.customer.CustomerFacade;
-import vn.sofitech.hmm.report.web.ReportDtos.*;
 import vn.sofitech.hmm.shared.ApiException;
 import vn.sofitech.hmm.shared.AuditService;
 import vn.sofitech.hmm.shared.PageResult;

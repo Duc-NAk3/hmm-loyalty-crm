@@ -1,10 +1,15 @@
 package vn.sofitech.hmm.report.service;
 
+import vn.sofitech.hmm.report.dto.dashboard.Kpi;
+import vn.sofitech.hmm.report.dto.dashboard.TierCount;
+import vn.sofitech.hmm.report.dto.dashboard.StoreRevenue;
+import vn.sofitech.hmm.report.dto.dashboard.DayRevenue;
+import vn.sofitech.hmm.report.dto.dashboard.CategoryRevenue;
+import vn.sofitech.hmm.report.dto.dashboard.DashboardView;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import vn.sofitech.hmm.report.web.ReportDtos.*;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;

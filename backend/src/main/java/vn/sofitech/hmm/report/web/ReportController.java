@@ -1,5 +1,11 @@
 package vn.sofitech.hmm.report.web;
 
+import vn.sofitech.hmm.report.dto.dashboard.DashboardView;
+import vn.sofitech.hmm.report.dto.customer.CustomerRow;
+import vn.sofitech.hmm.report.dto.customer.Customer360View;
+import vn.sofitech.hmm.report.dto.customer.LineRow;
+import vn.sofitech.hmm.report.dto.customer.PhoneView;
+import vn.sofitech.hmm.report.dto.audit.AuditRow;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -7,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import vn.sofitech.hmm.admin.CurrentUser;
 import vn.sofitech.hmm.report.service.CustomerQueryService;
 import vn.sofitech.hmm.report.service.DashboardService;
-import vn.sofitech.hmm.report.web.ReportDtos.*;
 import vn.sofitech.hmm.shared.PageResult;
 import vn.sofitech.hmm.shared.SmsOutbox;
 import vn.sofitech.hmm.shared.Texts;
