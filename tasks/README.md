@@ -24,7 +24,7 @@ Mỗi bước là một file `Bxx-*.md`. Trạng thái ghi ở dòng đầu mỗ
 | [B11](B11-docker.md) | Docker compose + hướng dẫn Docker | ⬜ | |
 | [Sau demo](B12-sau-demo.md) | Merge `main`, tài liệu Word còn lại (test case, rủi ro, thuyết trình) | ⬜ | |
 
-Các commit lẻ khác: `c32eabc` thêm CLAUDE.md; `bc902a7` tách Repository ra package `repository/`; `bd796e8` sửa lỗi đăng ký thành viên thiếu `marketingConsent`; DTO record → class trong `<module>/dto/<chức năng>/` (xem commit "DTO: đổi record sang class").
+Các commit lẻ khác: `c32eabc` thêm CLAUDE.md; `bc902a7` tách Repository ra package `repository/`; `bd796e8` sửa lỗi đăng ký thành viên thiếu `marketingConsent`; DTO record → class trong `<module>/dto/<chức năng>/` `b62ee79`.
 
 ## Tiếp tục công việc (sau khi compact hoặc mở phiên mới)
 1. Đọc `../CLAUDE.md` (lệnh, kiến trúc, quy ước) và file này.
