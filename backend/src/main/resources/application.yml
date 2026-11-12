@@ -11,6 +11,23 @@ spring:
     password: ${DB_PASSWORD:postgres}
   flyway:
     locations: classpath:db/migration
+  # ORM: Spring Data JPA (Hibernate). Flyway quản lý schema; Hibernate chỉ kiểm tra entity khớp bảng.
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 500
+          time_zone: Asia/Ho_Chi_Minh
+        order_inserts: true
+        order_updates: true
+        # pooled-lo: nextval trả về đầu khối 50 ID → không trùng ID cũ khi sequence đổi bước nhảy (V2)
+        id:
+          optimizer:
+            pooled:
+              preferred: pooled-lo
   servlet:
     multipart:
       max-file-size: 10MB
