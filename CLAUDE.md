@@ -45,12 +45,12 @@ Không làm: bán khi mất mạng (FR-09), hóa đơn điện tử, voucher, ph
 - **Cấu trúc trong mỗi module (layered + Facade):**
   - Gốc package: `<Module>Facade` (interface, chỉ khai báo hàm). Module khác chỉ được gọi qua đây.
   - `api/`: DTO dùng chung giữa các module (dữ liệu đi qua Facade), mỗi class một file, Lombok `@Value` (không setter). `api/package-info.java` có `@NamedInterface("api")` (thư viện `spring-modulith-api`) để Modulith cho phép module khác dùng; thiếu annotation này `ModularityTest` báo "non-exposed type". Ví dụ `customer/api/CustomerInfo`, `loyalty/api/EarnResult`.
-  - `web/`: `@RestController`. Entity không bao giờ trả ra API.
-  - `dto/<chức năng>/`: DTO của API, **mỗi DTO một class** (không dùng record), Lombok `@Getter @Setter @NoArgsConstructor @AllArgsConstructor`; field theo đúng tên JSON (camelCase), annotation kiểm tra (`@NotBlank`…) đặt trên field. Ví dụ `loyalty/dto/member/RegisterMemberRequest`, `loyalty/dto/tier/TierView`, `pos/dto/sale/SaleRequest`. Đọc giá trị bằng getter (`req.getPhone()`, boolean là `isX()`). Package Java viết thường (`customerimport` vì `import` là từ khóa).
+  - `controller/`: `@RestController` (tên package Java viết thường). Entity không bao giờ trả ra API.
+  - `dto/<chức năng>/`: DTO của API, **mỗi DTO một class, tên có đuôi `Dto`** (`...View` → `...Dto`, còn lại thêm `Dto`: `TierDto`, `TiersResponseDto`, `RegisterMemberRequestDto`) (không dùng record), Lombok `@Getter @Setter @NoArgsConstructor @AllArgsConstructor`; field theo đúng tên JSON (camelCase), annotation kiểm tra (`@NotBlank`…) đặt trên field. Ví dụ `loyalty/dto/member/RegisterMemberRequestDto`, `loyalty/dto/tier/TierDto`, `pos/dto/sale/SaleRequestDto`. Đọc giá trị bằng getter (`req.getPhone()`, boolean là `isX()`). Package Java viết thường (`customerimport` vì `import` là từ khóa).
   - `service/`: `@Service` nghiệp vụ và `@Transactional`; cài đặt Facade nằm ở đây (ví dụ `LoyaltyFacadeImpl`, `CustomerService implements CustomerFacade`).
   - `domain/`: `@Entity` (Lombok `@Getter`, rich domain method) và enum trạng thái.
   - `repository/`: interface Spring Data JPA (`extends JpaRepository<Entity, Long>`) – truy vấn theo tên hàm, `@Query` JPQL, `@Lock`.
-  - `ModularityTest` (Spring Modulith) báo lỗi khi gọi vào `web/`, `service/`, `domain/`, `repository/` của module khác hoặc khi có phụ thuộc vòng. Package `demo` được loại khỏi kiểm tra này.
+  - `ModularityTest` (Spring Modulith) báo lỗi khi gọi vào `controller/`, `service/`, `domain/`, `repository/` của module khác hoặc khi có phụ thuộc vòng. Package `demo` được loại khỏi kiểm tra này.
 - **ORM:** Spring Data JPA (Hibernate 7), `ddl-auto=validate`.
   - Schema chỉ quản lý bằng Flyway (`db/migration`); V2 đổi bước nhảy sequence thành 50, dùng `@SequenceGenerator(allocationSize = 50)` với optimizer `pooled-lo`.
   - Tên bảng số nhiều, đúng như ERD.

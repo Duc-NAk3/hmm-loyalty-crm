@@ -13,13 +13,13 @@ import vn.sofitech.hmm.admin.domain.Store;
 import vn.sofitech.hmm.admin.repository.StoreRepository;
 import vn.sofitech.hmm.catalog.domain.Category;
 import vn.sofitech.hmm.catalog.domain.Product;
-import vn.sofitech.hmm.catalog.dto.product.ProductView;
+import vn.sofitech.hmm.catalog.dto.product.ProductDto;
 import vn.sofitech.hmm.catalog.repository.CategoryRepository;
 import vn.sofitech.hmm.catalog.repository.ProductRepository;
 import vn.sofitech.hmm.catalog.service.ProductAdminService;
 import vn.sofitech.hmm.customer.CustomerFacade;
 import vn.sofitech.hmm.loyalty.domain.Tier;
-import vn.sofitech.hmm.report.dto.customer.CustomerRow;
+import vn.sofitech.hmm.report.dto.customer.CustomerRowDto;
 import vn.sofitech.hmm.report.service.CustomerQueryService;
 import vn.sofitech.hmm.shared.PageResult;
 
@@ -76,18 +76,18 @@ class SearchFilterTest extends PostgresTestBase {
         });
     }
 
-    private PageResult<CustomerRow> findCustomers(String q, String tier, String status, Long store) {
+    private PageResult<CustomerRowDto> findCustomers(String q, String tier, String status, Long store) {
         return customerSearch.search(q, tier, status, store, 0, 20);
     }
 
-    private List<String> namesOf(PageResult<CustomerRow> page) {
-        return page.items().stream().map(CustomerRow::getFullName).toList();
+    private List<String> namesOf(PageResult<CustomerRowDto> page) {
+        return page.items().stream().map(CustomerRowDto::getFullName).toList();
     }
 
     @Test
     @DisplayName("Tìm khách KHÔNG có từ khóa (lỗi cũ upper(bytea)) và chỉ lọc hạng / trạng thái / cửa hàng")
     void customerFiltersWithoutKeyword() {
-        PageResult<CustomerRow> all = findCustomers(null, null, null, null);   // gọi đầu tiên không có từ khóa
+        PageResult<CustomerRowDto> all = findCustomers(null, null, null, null);   // gọi đầu tiên không có từ khóa
         assertThat(all.total()).isEqualTo(3);                              // hồ sơ đã gộp bị loại
         assertThat(namesOf(all)).doesNotContain("Lan Đã Gộp");
         assertThat(all.items()).allSatisfy(r -> assertThat(r.getPhone()).contains("****"));
@@ -124,6 +124,6 @@ class SearchFilterTest extends PostgresTestBase {
     }
 
     private List<String> skus(String q, Long categoryId) {
-        return productSearch.list(q, categoryId, 0, 20).items().stream().map(ProductView::getSku).toList();
+        return productSearch.list(q, categoryId, 0, 20).items().stream().map(ProductDto::getSku).toList();
     }
 }

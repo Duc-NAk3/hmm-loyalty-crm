@@ -2,8 +2,8 @@ package vn.sofitech.hmm.catalog.service;
 
 import vn.sofitech.hmm.admin.api.StoreInfo;
 import vn.sofitech.hmm.admin.api.UserInfo;
-import vn.sofitech.hmm.catalog.dto.price.PriceView;
-import vn.sofitech.hmm.catalog.dto.price.PendingPriceView;
+import vn.sofitech.hmm.catalog.dto.price.PriceDto;
+import vn.sofitech.hmm.catalog.dto.price.PendingPriceDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.sofitech.hmm.admin.AdminFacade;
@@ -36,8 +36,8 @@ public class PriceService {
     }
 
     @Transactional(readOnly = true)
-    public List<PriceView> history(long productId) {
-        return prices.findByProductIdOrderByEffectiveFromDescIdDesc(productId).stream().map(pp -> new PriceView(pp.getId(),
+    public List<PriceDto> history(long productId) {
+        return prices.findByProductIdOrderByEffectiveFromDescIdDesc(productId).stream().map(pp -> new PriceDto(pp.getId(),
                 pp.getStoreId(), storeCode(pp.getStoreId()), pp.getPrice(), pp.getEffectiveFrom(), pp.getEffectiveTo(),
                 pp.getStatus().name(),
                 pp.getApprovedBy() == null ? null : admin.findUser(pp.getApprovedBy()).map(UserInfo::getFullName).orElse(null)))
@@ -45,8 +45,8 @@ public class PriceService {
     }
 
     @Transactional(readOnly = true)
-    public List<PendingPriceView> pending() {
-        return prices.findByStatusOrderByEffectiveFrom(ProductPrice.Status.DRAFT).stream().map(pp -> new PendingPriceView(pp.getId(),
+    public List<PendingPriceDto> pending() {
+        return prices.findByStatusOrderByEffectiveFrom(ProductPrice.Status.DRAFT).stream().map(pp -> new PendingPriceDto(pp.getId(),
                 pp.getProduct().getId(), pp.getProduct().getSku(), pp.getProduct().getName(), pp.getStoreId(),
                 storeCode(pp.getStoreId()), pp.getPrice(), pp.getEffectiveFrom())).toList();
     }

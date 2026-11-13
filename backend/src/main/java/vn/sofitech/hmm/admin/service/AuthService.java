@@ -1,8 +1,8 @@
 package vn.sofitech.hmm.admin.service;
 
-import vn.sofitech.hmm.admin.dto.auth.LoginRequest;
-import vn.sofitech.hmm.admin.dto.auth.SessionUser;
-import vn.sofitech.hmm.admin.dto.auth.LoginResponse;
+import vn.sofitech.hmm.admin.dto.auth.LoginRequestDto;
+import vn.sofitech.hmm.admin.dto.auth.SessionUserDto;
+import vn.sofitech.hmm.admin.dto.auth.LoginResponseDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -46,7 +46,7 @@ public class AuthService {
     }
 
     @Transactional
-    public LoginResponse login(LoginRequest req) {
+    public LoginResponseDto login(LoginRequestDto req) {
         AppUser u = users.findByUsernameIgnoreCase(req.getUsername().trim())
                 .filter(x -> encoder.matches(req.getPassword(), x.getPasswordHash()))
                 .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "BAD_LOGIN", "Sai tên đăng nhập hoặc mật khẩu"));
@@ -75,8 +75,8 @@ public class AuthService {
         if (storeId != null) claims.claim("storeId", storeId);
         String token = jwtEncoder.encode(JwtEncoderParameters.from(JwsHeader.with(MacAlgorithm.HS256).build(), claims.build())).getTokenValue();
 
-        SessionUser user = new SessionUser(u.getId(), u.getUsername(), u.getFullName(), role, storeId,
+        SessionUserDto user = new SessionUserDto(u.getId(), u.getUsername(), u.getFullName(), role, storeId,
                 u.getStore() == null ? null : u.getStore().getStoreCode(), u.getStore() == null ? null : u.getStore().getName());
-        return new LoginResponse(token, user, terminal);
+        return new LoginResponseDto(token, user, terminal);
     }
 }

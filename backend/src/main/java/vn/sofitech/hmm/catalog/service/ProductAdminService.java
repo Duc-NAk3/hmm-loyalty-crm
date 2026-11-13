@@ -1,9 +1,9 @@
 package vn.sofitech.hmm.catalog.service;
 
-import vn.sofitech.hmm.catalog.dto.category.CategoryView;
-import vn.sofitech.hmm.catalog.dto.product.ProductView;
-import vn.sofitech.hmm.catalog.dto.product.ProductInput;
-import vn.sofitech.hmm.catalog.dto.product.ImportResult;
+import vn.sofitech.hmm.catalog.dto.category.CategoryDto;
+import vn.sofitech.hmm.catalog.dto.product.ProductDto;
+import vn.sofitech.hmm.catalog.dto.product.ProductInputDto;
+import vn.sofitech.hmm.catalog.dto.product.ImportResultDto;
 import vn.sofitech.hmm.catalog.repository.CategoryRepository;
 import vn.sofitech.hmm.catalog.repository.ProductBarcodeRepository;
 import vn.sofitech.hmm.catalog.repository.ProductPriceRepository;
@@ -53,13 +53,13 @@ public class ProductAdminService {
     }
 
     @Transactional(readOnly = true)
-    public List<CategoryView> categories() {
-        return categories.findAllByOrderByCode().stream().map(c -> new CategoryView(c.getId(), c.getCode(), c.getName(),
+    public List<CategoryDto> categories() {
+        return categories.findAllByOrderByCode().stream().map(c -> new CategoryDto(c.getId(), c.getCode(), c.getName(),
                 c.getParent() == null ? null : c.getParent().getId(), c.isPromoRestricted())).toList();
     }
 
     @Transactional(readOnly = true)
-    public PageResult<ProductView> list(String q, Long categoryId, int page, int size) {
+    public PageResult<ProductDto> list(String q, Long categoryId, int page, int size) {
         // Chỉ ghép điều kiện người dùng thật sự chọn; không lọc gì thì lấy tất cả
         List<Specification<Product>> filters = new ArrayList<>();
         if (!Texts.isBlank(q)) filters.add(ProductSpecifications.keyword(q.trim()));
@@ -74,7 +74,7 @@ public class ProductAdminService {
         Map<Long, Long> drafts = new HashMap<>();
         if (!ids.isEmpty())
             for (Object[] row : prices.countByProductAndStatus(ids, ProductPrice.Status.DRAFT)) drafts.put((Long) row[0], (Long) row[1]);
-        return new PageResult<>(result.getTotalElements(), result.getContent().stream().map(p -> new ProductView(p.getId(), p.getSku(),
+        return new PageResult<>(result.getTotalElements(), result.getContent().stream().map(p -> new ProductDto(p.getId(), p.getSku(),
                 p.getName(), p.getUnit(), p.getCategory().getId(), p.getCategory().getName(), p.getVatRate(), p.isPromoRestricted(),
                 p.getCategory().isPromoRestricted(), p.isPointExcluded(), p.getStatus(),
                 p.getBarcodes().stream().map(ProductBarcode::getBarcode).sorted().collect(Collectors.joining(", ")),
@@ -82,7 +82,7 @@ public class ProductAdminService {
     }
 
     @Transactional
-    public long save(Long productId, ProductInput in, long userId) {
+    public long save(Long productId, ProductInputDto in, long userId) {
         if (Texts.isBlank(in.getSku()) || Texts.isBlank(in.getName()) || Texts.isBlank(in.getUnit()))
             throw ApiException.badRequest("PRODUCT", "Mã hàng, tên hàng và đơn vị tính là bắt buộc");
         Category category = categories.findById(in.getCategoryId()).orElseThrow(() -> ApiException.badRequest("CATEGORY", "Ngành hàng không tồn tại"));
@@ -112,7 +112,7 @@ public class ProductAdminService {
      * barcodes cách nhau bằng "|", để trống khi cập nhật thì giữ mã vạch cũ; price (nếu có) tạo giá toàn chuỗi đã duyệt, hiệu lực ngay.
      */
     @Transactional
-    public ImportResult importCsv(InputStream in, long userId) throws IOException {
+    public ImportResultDto importCsv(InputStream in, long userId) throws IOException {
         List<String> errors = new ArrayList<>();
         int created = 0, updated = 0, row = 0;
         try (BufferedReader r = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
@@ -130,7 +130,7 @@ public class ProductAdminService {
                     List<String> codes = c[5].isBlank() && existing.isPresent()
                             ? existing.get().getBarcodes().stream().map(ProductBarcode::getBarcode).toList()
                             : Arrays.asList(c[5].split("\\|"));
-                    long id = save(existing.map(Product::getId).orElse(null), new ProductInput(c[0], c[1], c[2], cat.getId(),
+                    long id = save(existing.map(Product::getId).orElse(null), new ProductInputDto(c[0], c[1], c[2], cat.getId(),
                             new BigDecimal(c[4].trim()), Boolean.parseBoolean(c[6].trim()), Boolean.parseBoolean(c[7].trim()), codes, "ACTIVE"), userId);
                     if (c.length > 8 && !c[8].isBlank()) {
                         long priceId = priceService.create(id, null, Long.parseLong(c[8].trim()), OffsetDateTime.now(Texts.VN), userId);
@@ -143,6 +143,6 @@ public class ProductAdminService {
                 }
             }
         }
-        return new ImportResult(created, updated, errors);
+        return new ImportResultDto(created, updated, errors);
     }
 }

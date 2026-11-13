@@ -1,9 +1,9 @@
 package vn.sofitech.hmm.admin.service;
 
-import vn.sofitech.hmm.admin.dto.store.StoreView;
-import vn.sofitech.hmm.admin.dto.user.RoleView;
-import vn.sofitech.hmm.admin.dto.user.UserView;
-import vn.sofitech.hmm.admin.dto.user.UserRequest;
+import vn.sofitech.hmm.admin.dto.store.StoreDto;
+import vn.sofitech.hmm.admin.dto.user.RoleDto;
+import vn.sofitech.hmm.admin.dto.user.UserDto;
+import vn.sofitech.hmm.admin.dto.user.UserRequestDto;
 import vn.sofitech.hmm.admin.repository.AppUserRepository;
 import vn.sofitech.hmm.admin.repository.PosTerminalRepository;
 import vn.sofitech.hmm.admin.repository.RoleRepository;
@@ -47,29 +47,29 @@ public class UserAdminService {
     }
 
     @Transactional(readOnly = true)
-    public List<StoreView> stores() {
-        return stores.findAllByOrderByStoreCode().stream().map(s -> new StoreView(s.getId(), s.getStoreCode(), s.getName(),
+    public List<StoreDto> stores() {
+        return stores.findAllByOrderByStoreCode().stream().map(s -> new StoreDto(s.getId(), s.getStoreCode(), s.getName(),
                 s.getRegion(), s.getAddress(), s.getStatus(), s.getOpenedAt(), terminals.countByStoreId(s.getId()))).toList();
     }
 
     @Transactional(readOnly = true)
-    public List<RoleView> roles() {
-        return roles.findAllByOrderById().stream().map(r -> new RoleView(r.getId(), r.getCode(), r.getName())).toList();
+    public List<RoleDto> roles() {
+        return roles.findAllByOrderById().stream().map(r -> new RoleDto(r.getId(), r.getCode(), r.getName())).toList();
     }
 
     @Transactional(readOnly = true)
-    public List<UserView> users() {
+    public List<UserDto> users() {
         return users.findAllByOrderByRoleIdAscUsernameAsc().stream().map(UserAdminService::toView).toList();
     }
 
-    private static UserView toView(AppUser u) {
+    private static UserDto toView(AppUser u) {
         Store s = u.getStore();
-        return new UserView(u.getId(), u.getUsername(), u.getFullName(), u.getPhone(), u.getRole().getCode(), u.getRole().getName(),
+        return new UserDto(u.getId(), u.getUsername(), u.getFullName(), u.getPhone(), u.getRole().getCode(), u.getRole().getName(),
                 s == null ? null : s.getId(), s == null ? null : s.getStoreCode(), u.getStatus().name(), u.getLastLoginAt());
     }
 
     @Transactional
-    public long create(UserRequest req, CurrentUser me) {
+    public long create(UserRequestDto req, CurrentUser me) {
         if (req.getPassword() == null) throw ApiException.badRequest("PASSWORD", "Cần nhập mật khẩu ban đầu (tối thiểu 6 ký tự)");
         Role role = role(req.getRole());
         Store store = store(req.getRole(), req.getStoreId());
@@ -79,7 +79,7 @@ public class UserAdminService {
     }
 
     @Transactional
-    public long update(long id, UserRequest req, CurrentUser me) {
+    public long update(long id, UserRequestDto req, CurrentUser me) {
         AppUser u = users.findById(id).orElseThrow(() -> ApiException.notFound("Không tìm thấy người dùng"));
         Role role = role(req.getRole());
         u.update(req.getFullName().trim(), req.getPhone(), role, store(req.getRole(), req.getStoreId()));

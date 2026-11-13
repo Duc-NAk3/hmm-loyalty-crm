@@ -3,9 +3,9 @@ package vn.sofitech.hmm.migration.service;
 import vn.sofitech.hmm.admin.api.StoreInfo;
 import vn.sofitech.hmm.admin.api.UserInfo;
 import vn.sofitech.hmm.customer.api.NewCustomer;
-import vn.sofitech.hmm.migration.dto.customerimport.ErrorView;
-import vn.sofitech.hmm.migration.dto.customerimport.ImportResult;
-import vn.sofitech.hmm.migration.dto.customerimport.BatchView;
+import vn.sofitech.hmm.migration.dto.customerimport.ErrorDto;
+import vn.sofitech.hmm.migration.dto.customerimport.ImportResultDto;
+import vn.sofitech.hmm.migration.dto.customerimport.BatchDto;
 import vn.sofitech.hmm.migration.repository.CustomerSourceRecordRepository;
 import vn.sofitech.hmm.migration.repository.ImportBatchRepository;
 import vn.sofitech.hmm.migration.repository.ImportErrorRepository;
@@ -60,7 +60,7 @@ public class CustomerImportService {
     }
 
     @Transactional
-    public ImportResult importCustomers(long storeId, String vendorCode, String fileName, byte[] content, long userId) throws IOException {
+    public ImportResultDto importCustomers(long storeId, String vendorCode, String fileName, byte[] content, long userId) throws IOException {
         VendorFormat v = VendorFormat.of(vendorCode).orElseThrow(() -> ApiException.badRequest("VENDOR", "Nhà cung cấp POS cũ không hợp lệ"));
         if (admin.findStore(storeId).isEmpty()) throw ApiException.badRequest("STORE", "Cửa hàng không tồn tại");
         String text = new String(content, StandardCharsets.UTF_8);
@@ -131,14 +131,14 @@ public class CustomerImportService {
         batch.complete(total, errorCount, saved.toString().replace('\\', '/'));
         audit.log(userId, "IMPORT_DATA", "import_batches", batch.getId(), null,
                 Map.of("vendor", v.code(), "rows", total, "created", created, "merged", merged, "errors", errorCount));
-        return new ImportResult(batch.getId(), total, created, merged, errorCount, errorsOf(batch.getId()));
+        return new ImportResultDto(batch.getId(), total, created, merged, errorCount, errorsOf(batch.getId()));
     }
 
     @Transactional(readOnly = true)
-    public List<BatchView> batches() {
+    public List<BatchDto> batches() {
         Map<Long, Long> imported = new HashMap<>();
         batches.countImportedPerBatch().forEach(r -> imported.put((Long) r[0], (Long) r[1]));
-        return batches.findAllByOrderByIdDesc().stream().map(b -> new BatchView(b.getId(),
+        return batches.findAllByOrderByIdDesc().stream().map(b -> new BatchDto(b.getId(),
                 admin.findStore(b.getStoreId()).map(StoreInfo::getStoreCode).orElse(null), b.getSourceVendor(), b.getDataType(),
                 b.getStatus().name(), b.getTotalRows(), b.getErrorRows(), b.getImportedAt(),
                 b.getImportedBy() == null ? null : admin.findUser(b.getImportedBy()).map(UserInfo::getUsername).orElse(null),
@@ -146,8 +146,8 @@ public class CustomerImportService {
     }
 
     @Transactional(readOnly = true)
-    public List<ErrorView> errorsOf(long batchId) {
-        return errors.findByBatchIdOrderByRowNo(batchId).stream().map(e -> new ErrorView(e.getRowNo(), e.getMessage(), e.getRawData())).toList();
+    public List<ErrorDto> errorsOf(long batchId) {
+        return errors.findByBatchIdOrderByRowNo(batchId).stream().map(e -> new ErrorDto(e.getRowNo(), e.getMessage(), e.getRawData())).toList();
     }
 
     /** Tách một dòng CSV, hỗ trợ giá trị trong dấu ngoặc kép. */

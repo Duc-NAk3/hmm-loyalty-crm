@@ -1,0 +1,16 @@
+package vn.sofitech.hmm.pos.dto.redemption;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class VerifyRequestDto {
+
+    private long terminalId;
+    private String otp;
+}

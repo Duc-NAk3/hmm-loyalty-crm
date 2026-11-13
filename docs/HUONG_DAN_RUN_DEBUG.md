@@ -72,7 +72,7 @@ Các lệnh khác ở **Ctrl+Shift+P → Tasks: Run Task** (`.vscode/tasks.json`
 ### 3.3 Đặt breakpoint – ví dụ đăng ký thành viên
 1. **Tắt mọi backend khác đang giữ cổng 8080** (terminal đang chạy `mvnw`, hoặc backend do Claude chạy). Nếu không, Debug sẽ báo `Port 8080 was already in use`.
 2. Chọn **Backend: Debug (Spring Boot)** → `F5`. Chờ log `Started HmmLoyaltyApplication`.
-3. Mở `backend/src/main/java/vn/sofitech/hmm/loyalty/web/MemberController.java`, bấm vào **lề trái** dòng `CurrentUser u = CurrentUser.of(jwt);` trong hàm `register` → hiện chấm đỏ.
+3. Mở `backend/src/main/java/vn/sofitech/hmm/loyalty/controller/MemberController.java`, bấm vào **lề trái** dòng `CurrentUser u = CurrentUser.of(jwt);` trong hàm `register` → hiện chấm đỏ.
    - Đặt ở **dòng lệnh bên trong hàm**, không đặt ở dòng khai báo hàm.
 4. Trên POS: tra cứu một SĐT **chưa là thành viên** (ví dụ `0869999010`) → form đăng ký mở → bấm **Đăng ký**. VS Code dừng ở dòng đó.
 5. Điều khiển:

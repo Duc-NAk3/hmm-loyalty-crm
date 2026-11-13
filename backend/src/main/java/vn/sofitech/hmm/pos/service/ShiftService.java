@@ -1,8 +1,8 @@
 package vn.sofitech.hmm.pos.service;
 
 import vn.sofitech.hmm.admin.api.UserInfo;
-import vn.sofitech.hmm.pos.dto.shift.ShiftView;
-import vn.sofitech.hmm.pos.dto.shift.CloseShiftResult;
+import vn.sofitech.hmm.pos.dto.shift.ShiftDto;
+import vn.sofitech.hmm.pos.dto.shift.CloseShiftResultDto;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.sofitech.hmm.admin.AdminFacade;
@@ -39,7 +39,7 @@ public class ShiftService {
     }
 
     @Transactional(readOnly = true)
-    public Optional<ShiftView> current(CurrentUser u, long terminalId) {
+    public Optional<ShiftDto> current(CurrentUser u, long terminalId) {
         checkTerminal(u, terminalId);
         return shifts.findByTerminalIdAndClosedAtIsNull(terminalId).map(this::toView);
     }
@@ -50,7 +50,7 @@ public class ShiftService {
     }
 
     @Transactional
-    public ShiftView open(CurrentUser u, long terminalId, long openingCash) {
+    public ShiftDto open(CurrentUser u, long terminalId, long openingCash) {
         checkTerminal(u, terminalId);
         if (shifts.findByTerminalIdAndClosedAtIsNull(terminalId).isPresent())
             throw ApiException.conflict("SHIFT_OPEN", "Quầy này đang có ca mở, cần đóng ca trước");
@@ -59,16 +59,16 @@ public class ShiftService {
     }
 
     @Transactional
-    public CloseShiftResult close(CurrentUser u, long shiftId, long countedCash) {
+    public CloseShiftResultDto close(CurrentUser u, long shiftId, long countedCash) {
         Shift s = shifts.findForUpdate(shiftId).orElseThrow(() -> ApiException.notFound("Không tìm thấy ca"));
         checkTerminal(u, s.getTerminalId());
         s.close(OffsetDateTime.now(Texts.VN), transactions.sumCashByShift(shiftId), countedCash, null);
-        return new CloseShiftResult(s.getId(), s.getExpectedCash(), s.getCountedCash(), s.getCashDifference());
+        return new CloseShiftResultDto(s.getId(), s.getExpectedCash(), s.getCountedCash(), s.getCashDifference());
     }
 
-    private ShiftView toView(Shift s) {
+    private ShiftDto toView(Shift s) {
         String cashier = admin.findUser(s.getCashierId()).map(UserInfo::getFullName).orElse(null);
-        return new ShiftView(s.getId(), s.getTerminalId(), s.getCashierId(), cashier, s.getOpenedAt(), s.getOpeningCash(),
+        return new ShiftDto(s.getId(), s.getTerminalId(), s.getCashierId(), cashier, s.getOpenedAt(), s.getOpeningCash(),
                 transactions.countByShiftId(s.getId()), transactions.sumCashByShift(s.getId()));
     }
 }

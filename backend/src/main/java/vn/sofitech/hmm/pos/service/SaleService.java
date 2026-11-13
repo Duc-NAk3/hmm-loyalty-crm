@@ -3,11 +3,11 @@ package vn.sofitech.hmm.pos.service;
 import vn.sofitech.hmm.admin.api.TerminalInfo;
 import vn.sofitech.hmm.admin.api.StoreInfo;
 import vn.sofitech.hmm.admin.api.UserInfo;
-import vn.sofitech.hmm.pos.dto.sale.LineInput;
-import vn.sofitech.hmm.pos.dto.sale.SaleRequest;
-import vn.sofitech.hmm.pos.dto.sale.ReceiptLineView;
-import vn.sofitech.hmm.pos.dto.sale.PaymentView;
-import vn.sofitech.hmm.pos.dto.sale.ReceiptView;
+import vn.sofitech.hmm.pos.dto.sale.LineInputDto;
+import vn.sofitech.hmm.pos.dto.sale.SaleRequestDto;
+import vn.sofitech.hmm.pos.dto.sale.ReceiptLineDto;
+import vn.sofitech.hmm.pos.dto.sale.PaymentDto;
+import vn.sofitech.hmm.pos.dto.sale.ReceiptDto;
 import vn.sofitech.hmm.pos.repository.SalesTransactionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -64,11 +64,11 @@ public class SaleService {
     }
 
     @Transactional(readOnly = true)
-    public List<PricedLine> price(List<LineInput> lines, long storeId) {
+    public List<PricedLine> price(List<LineInputDto> lines, long storeId) {
         if (lines == null || lines.isEmpty()) throw ApiException.badRequest("EMPTY", "Hóa đơn chưa có mặt hàng");
-        Map<Long, SellableProduct> products = catalog.sellableByIds(lines.stream().map(LineInput::getProductId).toList(), storeId);
+        Map<Long, SellableProduct> products = catalog.sellableByIds(lines.stream().map(LineInputDto::getProductId).toList(), storeId);
         List<PricedLine> out = new ArrayList<>();
-        for (LineInput l : lines) {
+        for (LineInputDto l : lines) {
             SellableProduct p = products.get(l.getProductId());
             if (p == null) throw ApiException.badRequest("PRODUCT", "Mặt hàng " + l.getProductId() + " không tồn tại hoặc ngừng bán");
             if (p.getPrice() < 0) throw ApiException.badRequest("NO_PRICE", "Mặt hàng " + p.getName() + " chưa có giá bán");
@@ -85,7 +85,7 @@ public class SaleService {
     }
 
     @Transactional
-    public ReceiptView checkout(CurrentUser cashier, SaleRequest req) {
+    public ReceiptDto checkout(CurrentUser cashier, SaleRequestDto req) {
         if (Texts.isBlank(req.getReceiptNo())) throw ApiException.badRequest("RECEIPT_NO", "Thiếu mã hóa đơn");
         // Chống trùng: gửi lại cùng mã hóa đơn thì trả kết quả cũ, không ghi lần hai
         Optional<SalesTransaction> existing = transactions.findByReceiptNo(req.getReceiptNo());
@@ -136,7 +136,7 @@ public class SaleService {
         return receipt(txn, req.getCashTendered(), upgradedTo);
     }
 
-    private ReceiptView receipt(SalesTransaction t, Long cashTendered, String upgradedTo) {
+    private ReceiptDto receipt(SalesTransaction t, Long cashTendered, String upgradedTo) {
         StoreInfo store = admin.findStore(t.getStoreId()).orElseThrow();
         String terminalCode = t.getTerminalId() == null ? null
                 : admin.findTerminal(t.getTerminalId()).map(TerminalInfo::getTerminalCode).orElse(null);
@@ -144,13 +144,13 @@ public class SaleService {
                 : admin.findUser(t.getCashierId()).map(UserInfo::getFullName).orElse(null);
         CustomerInfo member = t.getCustomerId() == null ? null : customers.findById(t.getCustomerId()).orElse(null);
         Map<Long, ProductLabel> labels = catalog.labels(t.getLines().stream().map(TransactionLine::getProductId).toList());
-        List<ReceiptLineView> lines = t.getLines().stream().map(l -> {
+        List<ReceiptLineDto> lines = t.getLines().stream().map(l -> {
             ProductLabel p = labels.get(l.getProductId());
-            return new ReceiptLineView(p.getSku(), p.getName(), p.getUnit(), l.getQuantity(), l.getUnitPrice(), l.getLineAmount(), l.isPointEligible());
+            return new ReceiptLineDto(p.getSku(), p.getName(), p.getUnit(), l.getQuantity(), l.getUnitPrice(), l.getLineAmount(), l.isPointEligible());
         }).toList();
-        List<PaymentView> payments = t.getPayments().stream().map(p -> new PaymentView(p.getMethod().name(), p.getAmount())).toList();
+        List<PaymentDto> payments = t.getPayments().stream().map(p -> new PaymentDto(p.getMethod().name(), p.getAmount())).toList();
         Long change = cashTendered == null ? null : cashTendered - t.cashPaid();
-        return new ReceiptView(t.getId(), t.getReceiptNo(), t.getTxnTime(), t.getNetAmount(), t.getEligibleAmount(), t.getPointsEarned(),
+        return new ReceiptDto(t.getId(), t.getReceiptNo(), t.getTxnTime(), t.getNetAmount(), t.getEligibleAmount(), t.getPointsEarned(),
                 t.getPointsRedeemed(), store.getStoreCode(), store.getName(), store.getAddress(), terminalCode, cashierName,
                 member == null ? null : member.getMemberCode(), member == null ? null : member.getFullName(),
                 member == null ? null : Texts.maskPhone(member.getPhone()), member == null ? null : member.getPointBalance(),

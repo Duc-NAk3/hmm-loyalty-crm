@@ -252,7 +252,7 @@ c) Câu lệnh kiểm tra sau khi test (pgAdmin hoặc psql):
 5.3 Luồng dữ liệu trong code (từ nút bấm tới CSDL)
 ---------------------------------------------------------------------
 Backend dùng ORM: Spring Data JPA (Hibernate). Mỗi module chia lớp theo cùng một mẫu:
-  Controller (web/) → Facade / Service (service/) → Repository (repository/) → Entity (domain/) → bảng CSDL.
+  Controller (controller/) → Facade / Service (service/) → Repository (repository/) → Entity (domain/) → bảng CSDL.
 - Module khác chỉ được gọi qua Facade ở gốc package: CatalogFacade, CustomerFacade, LoyaltyFacade, AdminFacade.
   Spring Modulith kiểm tra quy tắc này trong ModularityTest.
 - API trả DTO (Java record, tên trường camelCase), không trả entity.
@@ -267,14 +267,14 @@ Backend dùng ORM: Spring Data JPA (Hibernate). Mỗi module chia lớp theo cù
                               - gửi fetch POST /api/pos/sales;
                               - đổi lỗi {code, message} thành ApiError.
  4. vite.config.ts            Proxy /api → http://localhost:8080. Chỉ dùng khi chạy dev; khi chạy Docker thì nginx làm việc này.
- 5. Nhận ReceiptView (JSON)   pos/ReceiptView.tsx hiển thị hóa đơn; PosShell.tsx gọi lại loadShift() để cập nhật số hóa đơn của ca.
+ 5. Nhận ReceiptDto (JSON)    pos/ReceiptView.tsx hiển thị hóa đơn; PosShell.tsx gọi lại loadShift() để cập nhật số hóa đơn của ca.
 
 [BACKEND – backend/src/main/java/vn/sofitech/hmm]
  6. admin/config/SecurityConfig.java
       Bộ lọc Spring Security kiểm tra JWT (HS256).
       /api/pos/** chỉ cho vai trò CASHIER, STORE_MANAGER; sai thì trả 401/403.
- 7. pos/web/PosController.java  (Controller)
-      @PostMapping("/sales") checkout() nhận PosDtos.SaleRequest.
+ 7. pos/controller/PosController.java  (Controller)
+      @PostMapping("/sales") checkout() nhận SaleRequestDto (pos/dto/sale/).
       Người dùng lấy từ JWT qua admin/CurrentUser.java (uid, role, storeId).
  8. pos/service/SaleService.java  (Service, @Transactional – mọi bước dưới đây nằm trong một giao dịch)
     8.1 Chống trùng: SalesTransactionRepository.findByReceiptNo(); nếu đã có thì trả lại hóa đơn cũ.
@@ -304,7 +304,7 @@ Backend dùng ORM: Spring Data JPA (Hibernate). Mỗi module chia lớp theo cù
           (Observer) → shared/SmsOutbox ghi tin SMS_TIER vào outbox trong cùng giao dịch.
         Sau đó txn.applyLoyalty(): điền eligible_amount, points_earned, points_redeemed.
     8.9 Kết thúc giao dịch: Hibernate flush các thay đổi (INSERT payments, UPDATE sales_transactions, customers…) rồi commit.
-    8.10 receipt(): dựng PosDtos.ReceiptView từ entity và các Facade (AdminFacade: cửa hàng, quầy, thu ngân;
+    8.10 receipt(): dựng ReceiptDto từ entity và các Facade (AdminFacade: cửa hàng, quầy, thu ngân;
          CustomerFacade: thành viên; CatalogFacade.labels(): tên hàng; LoyaltyFacade.tierName()).
  9. shared/GlobalExceptionHandler.java
       ApiException → HTTP 400/403/404/409 kèm {code, message} tiếng Việt.
