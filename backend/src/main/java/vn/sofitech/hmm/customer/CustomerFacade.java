@@ -1,7 +1,9 @@
 package vn.sofitech.hmm.customer;
 
+import vn.sofitech.hmm.customer.api.CustomerInfo;
+import vn.sofitech.hmm.customer.api.NewCustomer;
+
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -11,18 +13,6 @@ import java.util.Optional;
  * do module loyalty cập nhật thông qua các hàm dưới đây (có khóa dòng), không sửa trực tiếp entity.
  */
 public interface CustomerFacade {
-
-    record CustomerInfo(Long customerId, String memberCode, String phone, String fullName, String status, String tierCode,
-                        int pointBalance, long spend12m, boolean redeemLocked, boolean employee, Long registeredStoreId,
-                        OffsetDateTime createdAt) {
-        public boolean isActive() {
-            return "UNVERIFIED".equals(status) || "VERIFIED".equals(status);
-        }
-    }
-
-    record NewCustomer(String phone, String fullName, String gender, LocalDate dateOfBirth, String email, Long storeId,
-                       String status, OffsetDateTime createdAt) {
-    }
 
     Optional<CustomerInfo> findById(long customerId);
 

@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import vn.sofitech.hmm.admin.AdminFacade.TerminalInfo;
+import vn.sofitech.hmm.admin.api.TerminalInfo;
 
 @Getter
 @Setter

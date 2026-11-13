@@ -1,5 +1,8 @@
 package vn.sofitech.hmm.migration.service;
 
+import vn.sofitech.hmm.admin.api.StoreInfo;
+import vn.sofitech.hmm.admin.api.UserInfo;
+import vn.sofitech.hmm.customer.api.NewCustomer;
 import vn.sofitech.hmm.migration.dto.customerimport.ErrorView;
 import vn.sofitech.hmm.migration.dto.customerimport.ImportResult;
 import vn.sofitech.hmm.migration.dto.customerimport.BatchView;
@@ -11,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.json.JsonMapper;
 import vn.sofitech.hmm.admin.AdminFacade;
 import vn.sofitech.hmm.customer.CustomerFacade;
-import vn.sofitech.hmm.customer.CustomerFacade.CustomerInfo;
+import vn.sofitech.hmm.customer.api.CustomerInfo;
 import vn.sofitech.hmm.migration.domain.*;
 import vn.sofitech.hmm.shared.ApiException;
 import vn.sofitech.hmm.shared.AuditService;
@@ -116,11 +119,11 @@ public class CustomerImportService {
             Optional<CustomerInfo> existing = customers.findActiveByPhone(phone);
             long customerId;
             if (existing.isPresent()) {
-                customerId = existing.get().customerId();
+                customerId = existing.get().getCustomerId();
                 customers.fillMissing(customerId, dob, email, gender);
                 merged++;
             } else {
-                customerId = customers.create(new CustomerFacade.NewCustomer(phone, name, gender, dob, email, storeId, "UNVERIFIED", null));
+                customerId = customers.create(new NewCustomer(phone, name, gender, dob, email, storeId, "UNVERIFIED", null));
                 created++;
             }
             sources.save(new CustomerSourceRecord(customerId, batch, v.code(), raw.get(v.ref()), rawJson));
@@ -136,9 +139,9 @@ public class CustomerImportService {
         Map<Long, Long> imported = new HashMap<>();
         batches.countImportedPerBatch().forEach(r -> imported.put((Long) r[0], (Long) r[1]));
         return batches.findAllByOrderByIdDesc().stream().map(b -> new BatchView(b.getId(),
-                admin.findStore(b.getStoreId()).map(AdminFacade.StoreInfo::storeCode).orElse(null), b.getSourceVendor(), b.getDataType(),
+                admin.findStore(b.getStoreId()).map(StoreInfo::getStoreCode).orElse(null), b.getSourceVendor(), b.getDataType(),
                 b.getStatus().name(), b.getTotalRows(), b.getErrorRows(), b.getImportedAt(),
-                b.getImportedBy() == null ? null : admin.findUser(b.getImportedBy()).map(AdminFacade.UserInfo::username).orElse(null),
+                b.getImportedBy() == null ? null : admin.findUser(b.getImportedBy()).map(UserInfo::getUsername).orElse(null),
                 imported.getOrDefault(b.getId(), 0L))).toList();
     }
 

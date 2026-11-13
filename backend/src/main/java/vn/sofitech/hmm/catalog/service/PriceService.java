@@ -1,5 +1,7 @@
 package vn.sofitech.hmm.catalog.service;
 
+import vn.sofitech.hmm.admin.api.StoreInfo;
+import vn.sofitech.hmm.admin.api.UserInfo;
 import vn.sofitech.hmm.catalog.dto.price.PriceView;
 import vn.sofitech.hmm.catalog.dto.price.PendingPriceView;
 import org.springframework.stereotype.Service;
@@ -38,7 +40,7 @@ public class PriceService {
         return prices.findByProductIdOrderByEffectiveFromDescIdDesc(productId).stream().map(pp -> new PriceView(pp.getId(),
                 pp.getStoreId(), storeCode(pp.getStoreId()), pp.getPrice(), pp.getEffectiveFrom(), pp.getEffectiveTo(),
                 pp.getStatus().name(),
-                pp.getApprovedBy() == null ? null : admin.findUser(pp.getApprovedBy()).map(AdminFacade.UserInfo::fullName).orElse(null)))
+                pp.getApprovedBy() == null ? null : admin.findUser(pp.getApprovedBy()).map(UserInfo::getFullName).orElse(null)))
                 .toList();
     }
 
@@ -77,6 +79,6 @@ public class PriceService {
     }
 
     private String storeCode(Long storeId) {
-        return storeId == null ? null : admin.findStore(storeId).map(AdminFacade.StoreInfo::storeCode).orElse(null);
+        return storeId == null ? null : admin.findStore(storeId).map(StoreInfo::getStoreCode).orElse(null);
     }
 }

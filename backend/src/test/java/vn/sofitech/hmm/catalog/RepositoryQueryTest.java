@@ -1,5 +1,6 @@
 package vn.sofitech.hmm.catalog;
 
+import vn.sofitech.hmm.customer.api.NewCustomer;
 import vn.sofitech.hmm.admin.repository.AppUserRepository;
 import vn.sofitech.hmm.admin.repository.RoleRepository;
 import vn.sofitech.hmm.admin.repository.StoreRepository;
@@ -79,7 +80,7 @@ class RepositoryQueryTest extends PostgresTestBase {
     }
 
     private long sellingPrice(long storeId) {
-        return catalog.sellableByIds(List.of(productId), storeId).get(productId).price();
+        return catalog.sellableByIds(List.of(productId), storeId).get(productId).getPrice();
     }
 
     @Test
@@ -114,7 +115,7 @@ class RepositoryQueryTest extends PostgresTestBase {
     @DisplayName("BRL-10: truy vấn lô FIFO chỉ lấy lô còn điểm, còn hạn, cũ nhất trước; tính đúng điểm sắp hết hạn")
     void fifoLotQuery() {
         long[] ids = tx.execute(s -> {
-            long customerId = customers.create(new CustomerFacade.NewCustomer("0901112222", "Khách Test", null, null, null, storeA, "UNVERIFIED", null));
+            long customerId = customers.create(new NewCustomer("0901112222", "Khách Test", null, null, null, storeA, "UNVERIFIED", null));
             long txnId = transactions.save(SalesTransaction.sale("R1", storeA, null, null, null, customerId, now)).getId();
             PointLot soon = lots.save(new PointLot(customerId, txnId, now.minusDays(340), now.plusDays(10), 7));       // sắp hết hạn
             PointLot old = lots.save(new PointLot(customerId, txnId, now.minusDays(60), now.plusMonths(10), 10));

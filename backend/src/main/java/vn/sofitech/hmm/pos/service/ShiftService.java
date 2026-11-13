@@ -1,11 +1,12 @@
 package vn.sofitech.hmm.pos.service;
 
+import vn.sofitech.hmm.admin.api.UserInfo;
 import vn.sofitech.hmm.pos.dto.shift.ShiftView;
 import vn.sofitech.hmm.pos.dto.shift.CloseShiftResult;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.sofitech.hmm.admin.AdminFacade;
-import vn.sofitech.hmm.admin.AdminFacade.TerminalInfo;
+import vn.sofitech.hmm.admin.api.TerminalInfo;
 import vn.sofitech.hmm.admin.CurrentUser;
 import vn.sofitech.hmm.pos.repository.SalesTransactionRepository;
 import vn.sofitech.hmm.pos.domain.Shift;
@@ -33,7 +34,7 @@ public class ShiftService {
     /** Quầy phải đang hoạt động và thuộc cửa hàng của người dùng. */
     public TerminalInfo checkTerminal(CurrentUser u, long terminalId) {
         TerminalInfo t = admin.findActiveTerminal(terminalId).orElseThrow(() -> ApiException.badRequest("BAD_TERMINAL", "Quầy không hợp lệ"));
-        if (u.storeId() == null || !u.storeId().equals(t.storeId())) throw ApiException.forbidden("Quầy không thuộc cửa hàng của bạn");
+        if (u.storeId() == null || !u.storeId().equals(t.getStoreId())) throw ApiException.forbidden("Quầy không thuộc cửa hàng của bạn");
         return t;
     }
 
@@ -66,7 +67,7 @@ public class ShiftService {
     }
 
     private ShiftView toView(Shift s) {
-        String cashier = admin.findUser(s.getCashierId()).map(AdminFacade.UserInfo::fullName).orElse(null);
+        String cashier = admin.findUser(s.getCashierId()).map(UserInfo::getFullName).orElse(null);
         return new ShiftView(s.getId(), s.getTerminalId(), s.getCashierId(), cashier, s.getOpenedAt(), s.getOpeningCash(),
                 transactions.countByShiftId(s.getId()), transactions.sumCashByShift(s.getId()));
     }

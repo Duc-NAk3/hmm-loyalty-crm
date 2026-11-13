@@ -1,5 +1,6 @@
 package vn.sofitech.hmm.pos.web;
 
+import vn.sofitech.hmm.customer.api.CustomerInfo;
 import vn.sofitech.hmm.pos.dto.shift.ShiftView;
 import vn.sofitech.hmm.pos.dto.shift.OpenShiftRequest;
 import vn.sofitech.hmm.pos.dto.shift.CloseShiftRequest;
@@ -18,9 +19,9 @@ import org.springframework.web.bind.annotation.*;
 import vn.sofitech.hmm.admin.CurrentUser;
 import vn.sofitech.hmm.customer.CustomerFacade;
 import vn.sofitech.hmm.loyalty.LoyaltyFacade;
-import vn.sofitech.hmm.loyalty.LoyaltyFacade.RedemptionHeld;
-import vn.sofitech.hmm.loyalty.LoyaltyFacade.RedemptionInfo;
-import vn.sofitech.hmm.loyalty.LoyaltyFacade.RedemptionRequested;
+import vn.sofitech.hmm.loyalty.api.RedemptionHeld;
+import vn.sofitech.hmm.loyalty.api.RedemptionInfo;
+import vn.sofitech.hmm.loyalty.api.RedemptionRequested;
 import vn.sofitech.hmm.loyalty.PointCalculator;
 import vn.sofitech.hmm.pos.service.SaleService;
 import vn.sofitech.hmm.pos.service.ShiftService;
@@ -107,7 +108,7 @@ public class PosController {
     /** Công cụ demo: "điện thoại của khách" – xem SMS giả lập gửi tới thành viên (OTP, chào mừng). */
     @GetMapping("/mock-phone")
     public List<SmsOutbox.SmsView> mockPhone(@RequestParam long customerId) {
-        CustomerFacade.CustomerInfo c = customers.findById(customerId).orElseThrow(() -> ApiException.notFound("Không tìm thấy thành viên"));
-        return sms.latest(c.phone(), 5);
+        CustomerInfo c = customers.findById(customerId).orElseThrow(() -> ApiException.notFound("Không tìm thấy thành viên"));
+        return sms.latest(c.getPhone(), 5);
     }
 }

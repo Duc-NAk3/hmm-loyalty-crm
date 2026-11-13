@@ -42,7 +42,7 @@ public class LedgerService {
     }
 
     public int earn(long customerId, long transactionId, int points, OffsetDateTime earnedAt, PointCalculator.Policy policy, Long userId) {
-        if (points <= 0) return customers.findById(customerId).orElseThrow().pointBalance();
+        if (points <= 0) return customers.findById(customerId).orElseThrow().getPointBalance();
         PointLot lot = lots.save(new PointLot(customerId, transactionId, earnedAt, PointCalculator.expiresAt(earnedAt, policy.expiryMonths()), points));
         int balance = customers.adjustPointBalance(customerId, points, false);
         write(customerId, EntryType.EARN, points, balance, lot, transactionId, null, policy, userId, earnedAt);

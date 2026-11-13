@@ -1,5 +1,6 @@
 package vn.sofitech.hmm.report;
 
+import vn.sofitech.hmm.customer.api.NewCustomer;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -55,10 +56,10 @@ class SearchFilterTest extends PostgresTestBase {
             em.persist(new Tier("MEMBER", "Thành viên", 0, BigDecimal.ONE, null));
             em.persist(new Tier("GOLD", "Vàng", 10_000_000, new BigDecimal("1.5"), null));
 
-            long lan = customers.create(new CustomerFacade.NewCustomer("0901234567", "Nguyễn Thị Lan", null, null, null, storeA, "VERIFIED", null));
-            customers.create(new CustomerFacade.NewCustomer("0912345678", "Trần Văn Hùng", null, null, null, storeA, "UNVERIFIED", null));
-            customers.create(new CustomerFacade.NewCustomer("0935123456", "Phạm Minh Tuấn", null, null, null, storeB, "UNVERIFIED", null));
-            long merged = customers.create(new CustomerFacade.NewCustomer("0987000111", "Lan Đã Gộp", null, null, null, storeB, "UNVERIFIED", null));
+            long lan = customers.create(new NewCustomer("0901234567", "Nguyễn Thị Lan", null, null, null, storeA, "VERIFIED", null));
+            customers.create(new NewCustomer("0912345678", "Trần Văn Hùng", null, null, null, storeA, "UNVERIFIED", null));
+            customers.create(new NewCustomer("0935123456", "Phạm Minh Tuấn", null, null, null, storeB, "UNVERIFIED", null));
+            long merged = customers.create(new NewCustomer("0987000111", "Lan Đã Gộp", null, null, null, storeB, "UNVERIFIED", null));
             customers.changeTier(lan, "GOLD");
             em.flush();
             em.createNativeQuery("update customer.customers set status = 'MERGED' where customer_id = " + merged).executeUpdate();

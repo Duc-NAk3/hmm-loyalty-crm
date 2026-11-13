@@ -1,5 +1,7 @@
 package vn.sofitech.hmm.catalog.service;
 
+import vn.sofitech.hmm.catalog.api.SellableProduct;
+import vn.sofitech.hmm.catalog.api.ProductLabel;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,7 +43,7 @@ public class CatalogService implements CatalogFacade {
     public Map<Long, SellableProduct> sellableByIds(Collection<Long> productIds, long storeId) {
         if (productIds.isEmpty()) return Map.of();
         return toSellable(products.findAllByIdIn(productIds).stream().filter(Product::isActive).toList(), storeId).stream()
-                .collect(Collectors.toMap(SellableProduct::productId, Function.identity()));
+                .collect(Collectors.toMap(SellableProduct::getProductId, Function.identity()));
     }
 
     @Override

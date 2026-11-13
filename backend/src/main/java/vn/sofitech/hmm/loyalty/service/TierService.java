@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import vn.sofitech.hmm.customer.CustomerFacade;
-import vn.sofitech.hmm.customer.CustomerFacade.CustomerInfo;
+import vn.sofitech.hmm.customer.api.CustomerInfo;
 import vn.sofitech.hmm.loyalty.PointCalculator;
 import vn.sofitech.hmm.loyalty.domain.TierHistory;
 import vn.sofitech.hmm.loyalty.repository.TierHistoryRepository;
@@ -54,11 +54,11 @@ public class TierService {
     public PointCalculator.Tier afterSale(long customerId, long amount) {
         CustomerInfo c = customers.addSpend(customerId, amount);
         List<PointCalculator.Tier> tiers = config.tiers();
-        PointCalculator.Tier current = find(tiers, c.tierCode());
-        PointCalculator.Tier target = PointCalculator.tierFor(c.spend12m(), tiers);
+        PointCalculator.Tier current = find(tiers, c.getTierCode());
+        PointCalculator.Tier target = PointCalculator.tierFor(c.getSpend12m(), tiers);
         if (target.thresholdSpend() <= current.thresholdSpend()) return current;
         changeTier(customerId, current.code(), target.code(), TierHistory.Reason.UPGRADE, OffsetDateTime.now(Texts.VN));
-        events.publishEvent(new SmsRequestedEvent("SMS_TIER", "customers", customerId, c.phone(),
+        events.publishEvent(new SmsRequestedEvent("SMS_TIER", "customers", customerId, c.getPhone(),
                 "Chuc mung ban da len hang " + Texts.unaccent(target.name()).toUpperCase() + " tai Hoa Mai Mart! He so tich diem moi: x" + target.multiplier()));
         return target;
     }
@@ -92,19 +92,19 @@ public class TierService {
         List<CustomerInfo> all = customers.findAllForTierReview();
         int recalculated = 0, up = 0, down = 0;
         for (CustomerInfo c : all) {
-            long s = spend.getOrDefault(c.customerId(), 0L);
-            if (s != c.spend12m()) {
-                customers.setSpend12m(c.customerId(), s);
+            long s = spend.getOrDefault(c.getCustomerId(), 0L);
+            if (s != c.getSpend12m()) {
+                customers.setSpend12m(c.getCustomerId(), s);
                 recalculated++;
             }
-            PointCalculator.Tier current = find(tiers, c.tierCode());
+            PointCalculator.Tier current = find(tiers, c.getTierCode());
             PointCalculator.Tier target = PointCalculator.tierFor(s, tiers);
-            OffsetDateTime since = lastChange.getOrDefault(c.customerId(), c.createdAt());
+            OffsetDateTime since = lastChange.getOrDefault(c.getCustomerId(), c.getCreatedAt());
             if (target.thresholdSpend() > current.thresholdSpend()) {
-                changeTier(c.customerId(), current.code(), target.code(), TierHistory.Reason.UPGRADE, now);
+                changeTier(c.getCustomerId(), current.code(), target.code(), TierHistory.Reason.UPGRADE, now);
                 up++;
             } else if (target.thresholdSpend() < current.thresholdSpend() && !since.plusMonths(12).isAfter(now)) {
-                changeTier(c.customerId(), current.code(), PointCalculator.oneLevelDown(current, tiers).code(), TierHistory.Reason.DOWNGRADE, now);
+                changeTier(c.getCustomerId(), current.code(), PointCalculator.oneLevelDown(current, tiers).code(), TierHistory.Reason.DOWNGRADE, now);
                 down++;
             }
         }

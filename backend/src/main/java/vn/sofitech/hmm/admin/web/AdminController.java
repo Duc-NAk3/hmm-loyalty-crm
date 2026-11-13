@@ -10,7 +10,7 @@ import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
-import vn.sofitech.hmm.admin.AdminFacade.TerminalInfo;
+import vn.sofitech.hmm.admin.api.TerminalInfo;
 import vn.sofitech.hmm.admin.CurrentUser;
 import vn.sofitech.hmm.admin.service.UserAdminService;
 

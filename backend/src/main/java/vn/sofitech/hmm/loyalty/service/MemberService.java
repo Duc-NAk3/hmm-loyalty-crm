@@ -5,7 +5,7 @@ import vn.sofitech.hmm.loyalty.dto.tier.TierView;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.sofitech.hmm.customer.CustomerFacade;
-import vn.sofitech.hmm.customer.CustomerFacade.CustomerInfo;
+import vn.sofitech.hmm.customer.api.CustomerInfo;
 import vn.sofitech.hmm.loyalty.PointCalculator;
 import vn.sofitech.hmm.loyalty.repository.PointLotRepository;
 import vn.sofitech.hmm.shared.Texts;
@@ -31,15 +31,15 @@ public class MemberService {
 
     public MemberSummary summary(CustomerInfo c) {
         List<PointCalculator.Tier> tiers = config.tiers();
-        PointCalculator.Tier tier = tiers.stream().filter(t -> t.code().equals(c.tierCode())).findFirst().orElseThrow();
+        PointCalculator.Tier tier = tiers.stream().filter(t -> t.code().equals(c.getTierCode())).findFirst().orElseThrow();
         PointCalculator.Tier next = tiers.stream().filter(t -> t.thresholdSpend() > tier.thresholdSpend()).findFirst().orElse(null);
         OffsetDateTime now = OffsetDateTime.now(Texts.VN);
-        long expiring = lots.sumExpiring(c.customerId(), now, now.plusDays(30));
-        OffsetDateTime expiringAt = expiring > 0 ? lots.firstExpiry(c.customerId(), now, now.plusDays(30)) : null;
-        return new MemberSummary(c.customerId(), c.memberCode(), c.fullName(), Texts.maskPhone(c.phone()), c.status(),
-                "VERIFIED".equals(c.status()), c.redeemLocked(), tier.code(), tier.name(), tier.multiplier(), c.pointBalance(),
-                (long) c.pointBalance() * config.currentPolicy().pointValueVnd(), expiring, expiringAt, c.spend12m(),
-                next == null ? null : next.name(), next == null ? 0 : Math.max(0, next.thresholdSpend() - c.spend12m()));
+        long expiring = lots.sumExpiring(c.getCustomerId(), now, now.plusDays(30));
+        OffsetDateTime expiringAt = expiring > 0 ? lots.firstExpiry(c.getCustomerId(), now, now.plusDays(30)) : null;
+        return new MemberSummary(c.getCustomerId(), c.getMemberCode(), c.getFullName(), Texts.maskPhone(c.getPhone()), c.getStatus(),
+                "VERIFIED".equals(c.getStatus()), c.isRedeemLocked(), tier.code(), tier.name(), tier.multiplier(), c.getPointBalance(),
+                (long) c.getPointBalance() * config.currentPolicy().pointValueVnd(), expiring, expiringAt, c.getSpend12m(),
+                next == null ? null : next.name(), next == null ? 0 : Math.max(0, next.thresholdSpend() - c.getSpend12m()));
     }
 
     public List<TierView> tierTable() {

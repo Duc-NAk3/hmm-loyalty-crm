@@ -1,5 +1,9 @@
 package vn.sofitech.hmm.loyalty.service;
 
+import vn.sofitech.hmm.loyalty.api.RedemptionRequested;
+import vn.sofitech.hmm.loyalty.api.RedemptionHeld;
+import vn.sofitech.hmm.loyalty.api.RedemptionInfo;
+import vn.sofitech.hmm.loyalty.api.EarnResult;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -69,7 +73,7 @@ public class LoyaltyFacadeImpl implements LoyaltyFacade {
     @Transactional(propagation = Propagation.MANDATORY)
     public EarnResult earnForSale(long customerId, long transactionId, long eligibleAmount, long saleTotal, OffsetDateTime at, long cashierId) {
         PointCalculator.Policy policy = config.currentPolicy();
-        PointCalculator.Tier tier = config.tier(customers.findById(customerId).orElseThrow().tierCode()); // hạng tại thời điểm giao dịch
+        PointCalculator.Tier tier = config.tier(customers.findById(customerId).orElseThrow().getTierCode()); // hạng tại thời điểm giao dịch
         int earned = PointCalculator.earnedPoints(eligibleAmount, policy, tier.multiplier(), BigDecimal.ONE);
         int balance = ledger.earn(customerId, transactionId, earned, at, policy, cashierId);
         PointCalculator.Tier after = tiers.afterSale(customerId, saleTotal);

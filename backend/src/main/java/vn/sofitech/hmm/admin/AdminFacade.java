@@ -1,5 +1,9 @@
 package vn.sofitech.hmm.admin;
 
+import vn.sofitech.hmm.admin.api.StoreInfo;
+import vn.sofitech.hmm.admin.api.TerminalInfo;
+import vn.sofitech.hmm.admin.api.UserInfo;
+
 import java.util.Optional;
 
 /**
@@ -7,15 +11,6 @@ import java.util.Optional;
  * không truy cập trực tiếp entity hay repository của admin.
  */
 public interface AdminFacade {
-
-    record TerminalInfo(Long terminalId, String terminalCode, Long storeId, String storeCode, String storeName) {
-    }
-
-    record StoreInfo(Long storeId, String storeCode, String name, String address) {
-    }
-
-    record UserInfo(Long userId, String username, String fullName) {
-    }
 
     /** Quầy đang hoạt động. */
     Optional<TerminalInfo> findActiveTerminal(long terminalId);

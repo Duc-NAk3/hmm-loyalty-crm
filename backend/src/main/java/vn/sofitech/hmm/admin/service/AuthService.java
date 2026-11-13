@@ -13,7 +13,7 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import vn.sofitech.hmm.admin.AdminFacade.TerminalInfo;
+import vn.sofitech.hmm.admin.api.TerminalInfo;
 import vn.sofitech.hmm.admin.domain.AppUser;
 import vn.sofitech.hmm.admin.repository.AppUserRepository;
 import vn.sofitech.hmm.admin.domain.PosTerminal;

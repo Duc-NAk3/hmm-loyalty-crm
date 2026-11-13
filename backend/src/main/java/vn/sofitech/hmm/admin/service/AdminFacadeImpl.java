@@ -1,5 +1,8 @@
 package vn.sofitech.hmm.admin.service;
 
+import vn.sofitech.hmm.admin.api.TerminalInfo;
+import vn.sofitech.hmm.admin.api.StoreInfo;
+import vn.sofitech.hmm.admin.api.UserInfo;
 import vn.sofitech.hmm.admin.repository.AppUserRepository;
 import vn.sofitech.hmm.admin.repository.PosTerminalRepository;
 import vn.sofitech.hmm.admin.repository.StoreRepository;

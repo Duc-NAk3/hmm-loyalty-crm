@@ -1,24 +1,14 @@
 package vn.sofitech.hmm.loyalty;
 
+import vn.sofitech.hmm.loyalty.api.EarnResult;
+import vn.sofitech.hmm.loyalty.api.RedemptionHeld;
+import vn.sofitech.hmm.loyalty.api.RedemptionInfo;
+import vn.sofitech.hmm.loyalty.api.RedemptionRequested;
+
 import java.time.OffsetDateTime;
 
 /** API công khai của module loyalty (Facade): tích điểm cho hóa đơn, đổi điểm có OTP, thông tin hạng. */
 public interface LoyaltyFacade {
-
-    record RedemptionRequested(Long redemptionId, int points, long amountVnd, String status, String phoneMasked, int otpTtlMinutes) {
-    }
-
-    record RedemptionHeld(Long redemptionId, String status, int points, long amountVnd, OffsetDateTime holdExpiresAt,
-                          int balanceAfterHold, boolean phoneVerified) {
-    }
-
-    record RedemptionInfo(Long redemptionId, Long customerId, Long terminalId, int points, long amountVnd, String status,
-                          OffsetDateTime holdExpiresAt) {
-    }
-
-    /** Kết quả tích điểm cho một hóa đơn: điểm cộng, số dư sau cùng, hạng hiện tại, hạng mới nếu vừa lên hạng. */
-    record EarnResult(int pointsEarned, int balance, String tierCode, String tierName, String upgradedToName) {
-    }
 
     PointCalculator.Policy currentPolicy();
 

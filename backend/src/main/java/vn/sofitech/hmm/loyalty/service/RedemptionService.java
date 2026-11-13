@@ -9,10 +9,10 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import vn.sofitech.hmm.admin.AdminFacade;
 import vn.sofitech.hmm.customer.CustomerFacade;
-import vn.sofitech.hmm.customer.CustomerFacade.CustomerInfo;
-import vn.sofitech.hmm.loyalty.LoyaltyFacade.RedemptionHeld;
-import vn.sofitech.hmm.loyalty.LoyaltyFacade.RedemptionInfo;
-import vn.sofitech.hmm.loyalty.LoyaltyFacade.RedemptionRequested;
+import vn.sofitech.hmm.customer.api.CustomerInfo;
+import vn.sofitech.hmm.loyalty.api.RedemptionHeld;
+import vn.sofitech.hmm.loyalty.api.RedemptionInfo;
+import vn.sofitech.hmm.loyalty.api.RedemptionRequested;
 import vn.sofitech.hmm.loyalty.PointCalculator;
 import vn.sofitech.hmm.loyalty.domain.PointRedemption;
 import vn.sofitech.hmm.loyalty.repository.PointRedemptionRepository;
@@ -66,9 +66,9 @@ public class RedemptionService {
     @Transactional(readOnly = true)
     public PointCalculator.RedeemQuote quote(long customerId, long redeemableAmount) {
         CustomerInfo c = customers.findById(customerId).orElseThrow(() -> ApiException.notFound("Không tìm thấy thành viên"));
-        if (c.redeemLocked()) return new PointCalculator.RedeemQuote(false, 0, 0, "Tài khoản đang tạm khóa đổi điểm, mời khách liên hệ CSKH");
+        if (c.isRedeemLocked()) return new PointCalculator.RedeemQuote(false, 0, 0, "Tài khoản đang tạm khóa đổi điểm, mời khách liên hệ CSKH");
         if (!c.isActive()) return new PointCalculator.RedeemQuote(false, 0, 0, "Hồ sơ không ở trạng thái hoạt động");
-        return PointCalculator.quote(redeemableAmount, c.pointBalance(), config.currentPolicy());
+        return PointCalculator.quote(redeemableAmount, c.getPointBalance(), config.currentPolicy());
     }
 
     @Transactional
@@ -89,9 +89,9 @@ public class RedemptionService {
         String otp = String.format("%0" + len + "d", RANDOM.nextInt((int) Math.pow(10, len)));
         otpStore.save(String.valueOf(r.getId()), otp, Duration.ofMinutes(ttl), admin.intParam("OTP_MAX_ATTEMPTS", 3));
         CustomerInfo c = customers.findById(customerId).orElseThrow();
-        events.publishEvent(new SmsRequestedEvent("SMS_OTP", "point_redemptions", r.getId(), c.phone(),
+        events.publishEvent(new SmsRequestedEvent("SMS_OTP", "point_redemptions", r.getId(), c.getPhone(),
                 "Ma OTP doi " + points + " diem tai Hoa Mai Mart: " + otp + ". Hieu luc " + ttl + " phut. Khong chia se ma nay cho nguoi khac."));
-        return new RedemptionRequested(r.getId(), points, amount, r.getStatus().name(), Texts.maskPhone(c.phone()), ttl);
+        return new RedemptionRequested(r.getId(), points, amount, r.getStatus().name(), Texts.maskPhone(c.getPhone()), ttl);
     }
 
     /** Không rollback khi báo lỗi để giữ trạng thái hủy sau khi sai OTP quá số lần / OTP hết hạn. */

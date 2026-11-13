@@ -1,5 +1,6 @@
 package vn.sofitech.hmm.loyalty;
 
+import vn.sofitech.hmm.customer.api.NewCustomer;
 import vn.sofitech.hmm.admin.repository.AppUserRepository;
 import vn.sofitech.hmm.admin.repository.PosTerminalRepository;
 import vn.sofitech.hmm.admin.repository.RoleRepository;
@@ -19,8 +20,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 import vn.sofitech.hmm.PostgresTestBase;
 import vn.sofitech.hmm.admin.domain.*;
 import vn.sofitech.hmm.customer.CustomerFacade;
-import vn.sofitech.hmm.loyalty.LoyaltyFacade.RedemptionHeld;
-import vn.sofitech.hmm.loyalty.LoyaltyFacade.RedemptionRequested;
+import vn.sofitech.hmm.loyalty.api.RedemptionHeld;
+import vn.sofitech.hmm.loyalty.api.RedemptionRequested;
 import vn.sofitech.hmm.loyalty.domain.*;
 import vn.sofitech.hmm.loyalty.service.LedgerService;
 import vn.sofitech.hmm.loyalty.service.LoyaltyConfigService;
@@ -82,7 +83,7 @@ class LoyaltyIntegrationTest extends PostgresTestBase {
             txn1 = transactions.save(SalesTransaction.sale("R1", store.getId(), terminalId, null, null, null, OffsetDateTime.now())).getId();
             txn2 = transactions.save(SalesTransaction.sale("R2", store.getId(), terminalId, null, null, null, OffsetDateTime.now())).getId();
             txn3 = transactions.save(SalesTransaction.sale("R3", store.getId(), terminalId, null, null, null, OffsetDateTime.now())).getId();
-            customerId = customers.create(new CustomerFacade.NewCustomer("0901112222", "Khách Test", null, null, null, store.getId(),
+            customerId = customers.create(new NewCustomer("0901112222", "Khách Test", null, null, null, store.getId(),
                     "UNVERIFIED", null));
         });
     }
@@ -92,7 +93,7 @@ class LoyaltyIntegrationTest extends PostgresTestBase {
     }
 
     int balance() {
-        return customers.findById(customerId).orElseThrow().pointBalance();
+        return customers.findById(customerId).orElseThrow().getPointBalance();
     }
 
     long ledgerSum() {
@@ -176,26 +177,26 @@ class LoyaltyIntegrationTest extends PostgresTestBase {
     void otpFlowHoldsPointsAndVerifiesPhone() {
         tx.executeWithoutResult(s -> ledger.earn(customerId, txn1, 500, OffsetDateTime.now(), policy(), cashierId));
         RedemptionRequested req = loyalty.requestRedemption(customerId, terminalId, 200, 400_000);
-        assertThat(req.status()).isEqualTo("QUOTED");
+        assertThat(req.getStatus()).isEqualTo("QUOTED");
 
-        assertThatThrownBy(() -> loyalty.verifyOtp(req.redemptionId(), terminalId, wrongOtp(), cashierId))
+        assertThatThrownBy(() -> loyalty.verifyOtp(req.getRedemptionId(), terminalId, wrongOtp(), cashierId))
                 .isInstanceOf(ApiException.class).hasMessageContaining("không đúng");
-        RedemptionHeld held = loyalty.verifyOtp(req.redemptionId(), terminalId, lastOtp(), cashierId);
-        assertThat(held.status()).isEqualTo("HELD");
-        assertThat(held.phoneVerified()).isTrue();
+        RedemptionHeld held = loyalty.verifyOtp(req.getRedemptionId(), terminalId, lastOtp(), cashierId);
+        assertThat(held.getStatus()).isEqualTo("HELD");
+        assertThat(held.isPhoneVerified()).isTrue();
         assertThat(balance()).isEqualTo(300);
-        assertThat(customers.findById(customerId).orElseThrow().status()).isEqualTo("VERIFIED");
+        assertThat(customers.findById(customerId).orElseThrow().getStatus()).isEqualTo("VERIFIED");
 
-        loyalty.cancelRedemption(req.redemptionId(), terminalId, cashierId);
+        loyalty.cancelRedemption(req.getRedemptionId(), terminalId, cashierId);
         assertThat((long) balance()).isEqualTo(500).isEqualTo(ledgerSum());
-        assertThat(redemptions.findById(req.redemptionId()).orElseThrow().getStatus()).isEqualTo(PointRedemption.Status.RELEASED);
+        assertThat(redemptions.findById(req.getRedemptionId()).orElseThrow().getStatus()).isEqualTo(PointRedemption.Status.RELEASED);
     }
 
     @Test
     @DisplayName("BRL-09: sai OTP 3 lần → hủy yêu cầu đổi điểm, không trừ điểm")
     void threeWrongOtpsCancelRequest() {
         tx.executeWithoutResult(s -> ledger.earn(customerId, txn1, 500, OffsetDateTime.now(), policy(), cashierId));
-        long id = loyalty.requestRedemption(customerId, terminalId, 100, 400_000).redemptionId();
+        long id = loyalty.requestRedemption(customerId, terminalId, 100, 400_000).getRedemptionId();
         String wrong = wrongOtp();
         assertThatThrownBy(() -> loyalty.verifyOtp(id, terminalId, wrong, cashierId)).hasMessageContaining("không đúng");
         assertThatThrownBy(() -> loyalty.verifyOtp(id, terminalId, wrong, cashierId)).hasMessageContaining("không đúng");

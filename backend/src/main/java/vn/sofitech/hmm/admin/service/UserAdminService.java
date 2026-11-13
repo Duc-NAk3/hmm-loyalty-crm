@@ -11,7 +11,7 @@ import vn.sofitech.hmm.admin.repository.StoreRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import vn.sofitech.hmm.admin.AdminFacade.TerminalInfo;
+import vn.sofitech.hmm.admin.api.TerminalInfo;
 import vn.sofitech.hmm.admin.CurrentUser;
 import vn.sofitech.hmm.admin.domain.*;
 import vn.sofitech.hmm.shared.ApiException;

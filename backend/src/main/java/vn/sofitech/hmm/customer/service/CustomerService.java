@@ -1,5 +1,7 @@
 package vn.sofitech.hmm.customer.service;
 
+import vn.sofitech.hmm.customer.api.CustomerInfo;
+import vn.sofitech.hmm.customer.api.NewCustomer;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -72,16 +74,16 @@ public class CustomerService implements CustomerFacade {
 
     @Override
     public long create(NewCustomer c) {
-        String phone = Texts.normalizePhone(c.phone());
+        String phone = Texts.normalizePhone(c.getPhone());
         if (phone == null) throw ApiException.badRequest("BAD_PHONE", "SĐT không hợp lệ");
-        if (Texts.isBlank(c.fullName())) throw ApiException.badRequest("NAME", "Họ tên là bắt buộc");
+        if (Texts.isBlank(c.getFullName())) throw ApiException.badRequest("NAME", "Họ tên là bắt buộc");
         if (customers.findByPhoneAndStatusNot(phone, Customer.Status.MERGED).isPresent())
             throw ApiException.conflict("PHONE_EXISTS", "SĐT đã là thành viên");
         String memberCode = "HM" + customers.nextMemberNumber();
-        Customer saved = customers.save(new Customer(memberCode, phone, Texts.normalizeName(c.fullName()), c.gender(), c.dateOfBirth(),
-                Texts.isBlank(c.email()) ? null : c.email().trim(), c.storeId(),
-                c.status() == null ? Customer.Status.UNVERIFIED : Customer.Status.valueOf(c.status()),
-                c.createdAt() == null ? now() : c.createdAt()));
+        Customer saved = customers.save(new Customer(memberCode, phone, Texts.normalizeName(c.getFullName()), c.getGender(), c.getDateOfBirth(),
+                Texts.isBlank(c.getEmail()) ? null : c.getEmail().trim(), c.getStoreId(),
+                c.getStatus() == null ? Customer.Status.UNVERIFIED : Customer.Status.valueOf(c.getStatus()),
+                c.getCreatedAt() == null ? now() : c.getCreatedAt()));
         return saved.getId();
     }
 

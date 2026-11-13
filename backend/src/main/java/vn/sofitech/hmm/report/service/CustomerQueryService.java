@@ -1,5 +1,6 @@
 package vn.sofitech.hmm.report.service;
 
+import vn.sofitech.hmm.customer.api.CustomerInfo;
 import vn.sofitech.hmm.report.dto.customer.CustomerRow;
 import vn.sofitech.hmm.report.dto.customer.Profile;
 import vn.sofitech.hmm.report.dto.customer.Stats;
@@ -174,7 +175,7 @@ public class CustomerQueryService {
         List<ConsentRow> consents = em.createQuery("""
                         select k.purpose, k.status, k.channel, k.termsVersion, k.capturedAt, u.fullName
                         from Consent k left join AppUser u on u.id = k.capturedBy
-                        where k.customer.id = :id order by k.capturedAt desc
+                        where k.customer.id = :id order by k.capturedAt desc, k.id
                         """, Object[].class).setParameter("id", customerId).getResultList().stream()
                 .map(x -> new ConsentRow(String.valueOf(x[0]), String.valueOf(x[1]), (String) x[2], (String) x[3], (OffsetDateTime) x[4],
                         (String) x[5])).toList();
@@ -209,7 +210,7 @@ public class CustomerQueryService {
 
     @Transactional
     public PhoneView revealPhone(long customerId, long userId) {
-        String phone = customers.findById(customerId).map(CustomerFacade.CustomerInfo::phone)
+        String phone = customers.findById(customerId).map(CustomerInfo::getPhone)
                 .orElseThrow(() -> ApiException.notFound("Không tìm thấy khách hàng"));
         audit.log(userId, "VIEW_FULL_PHONE", "customers", customerId, null, null);
         return new PhoneView(phone);

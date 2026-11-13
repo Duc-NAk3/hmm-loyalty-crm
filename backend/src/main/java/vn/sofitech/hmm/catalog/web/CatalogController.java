@@ -15,7 +15,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import vn.sofitech.hmm.admin.CurrentUser;
-import vn.sofitech.hmm.catalog.CatalogFacade.SellableProduct;
+import vn.sofitech.hmm.catalog.api.SellableProduct;
 import vn.sofitech.hmm.catalog.service.CatalogService;
 import vn.sofitech.hmm.catalog.service.PriceService;
 import vn.sofitech.hmm.catalog.service.ProductAdminService;
