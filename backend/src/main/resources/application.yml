@@ -48,6 +48,9 @@ app:
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
+    persist-authorization: true   # giữ token đã nhập ở nút Authorize khi tải lại trang
+    tags-sorter: alpha
+    operations-sorter: alpha
 
 logging:
   level:

@@ -110,7 +110,35 @@ Các lệnh khác ở **Ctrl+Shift+P → Tasks: Run Task** (`.vscode/tasks.json`
 
 ---
 
-## 5. Lỗi thường gặp
+## 5. Thử API bằng Swagger
+
+Swagger UI là trang web liệt kê mọi API của backend và cho gọi thử ngay trên trình duyệt (không cần frontend, không cần Postman). Định nghĩa API sinh tự động từ code nên luôn khớp bản đang chạy.
+
+- Mở **http://localhost:8080/swagger-ui.html** (backend phải đang chạy). Định nghĩa dạng máy đọc: `/v3/api-docs`.
+- API nhóm theo controller (`auth-controller`, `pos-controller`, `report-controller`…). Ổ khóa bên phải = API cần token; API đăng nhập và danh sách quầy không cần.
+
+**Bước 1 – Lấy token:** mở **POST /api/auth/login** → **Try it out** → sửa nội dung → **Execute** → chép giá trị `token` trong *Response body*.
+
+| Muốn thử nhóm API | Nội dung đăng nhập |
+|---|---|
+| Web Portal (`/api/portal/...`) | `{"username": "admin", "password": "Demo@123"}` (hoặc `cskh`, `marketing`, `danhmuc`, `ql.hm001` để thử phân quyền) |
+| POS (`/api/pos/...`) | `{"username": "tn.hm001.1", "password": "Demo@123", "terminalCode": "HM001-Q01"}` – bắt buộc có `terminalCode`; `terminalId` của quầy này là `1` |
+
+**Bước 2 – Gắn token:** bấm nút **Authorize** (góc phải, hình ổ khóa) → dán token (chỉ dán chuỗi token, **không** gõ chữ `Bearer`) → **Authorize** → **Close**. Từ đó mọi lời gọi tự kèm header `Authorization: Bearer <token>`; token được giữ cả khi tải lại trang. Đổi tài khoản: **Authorize → Logout**, rồi dán token mới.
+
+**Bước 3 – Gọi API:** mở API → **Try it out** → nhập tham số / nội dung → **Execute**. Kết quả hiện mã HTTP, nội dung trả về và lệnh `curl` tương đương (chép ra terminal để gọi lại).
+
+**Ví dụ luồng POS:** đăng nhập thu ngân → `GET /api/pos/shifts/current?terminalId=1` (204 = chưa có ca) → `POST /api/pos/shifts/open` `{"terminalId": 1, "openingCash": 2000000}` → `GET /api/pos/members/lookup?q=0901234567` → `POST /api/pos/redemptions/quote` → `POST /api/pos/redemptions` → lấy OTP bằng `GET /api/pos/mock-phone?customerId=1` → `POST /api/pos/redemptions/{id}/verify` → `POST /api/pos/sales`. Mã mặt hàng (`productId`) lấy từ `GET /api/pos/products?barcode=8931002000144`.
+
+**Lưu ý:**
+- **401:** chưa bấm Authorize, token hết hạn (12 giờ) hoặc database vừa tạo lại → đăng nhập lấy token mới.
+- **403:** đúng token nhưng sai vai trò, ví dụ token `admin` gọi `/api/pos/...` (cần token thu ngân), hoặc thu ngân gọi `/api/portal/...`.
+- Gọi API trên Swagger là **ghi thật vào database** (`hmm_loyalty`), giống thao tác trên giao diện. Muốn dữ liệu sạch cho buổi demo thì tạo lại database sau khi thử.
+- Đặc tả chi tiết từng API (tham số, kết quả, mã lỗi): tài liệu `03_Diagrams/SFT-AB-RTL-CRM-2026-001-API_Specification-NguyenAnhDuc.docx`.
+
+---
+
+## 6. Lỗi thường gặp
 
 | Hiện tượng | Nguyên nhân | Cách xử lý |
 |---|---|---|

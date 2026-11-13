@@ -6,6 +6,7 @@ import vn.sofitech.hmm.admin.dto.user.UserDto;
 import vn.sofitech.hmm.admin.dto.user.UserRequestDto;
 import vn.sofitech.hmm.admin.dto.user.StatusRequestDto;
 import vn.sofitech.hmm.admin.dto.common.IdResponseDto;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -28,6 +29,7 @@ public class AdminController {
 
     /** Danh sách quầy để cài đặt máy POS lần đầu (giả lập đăng ký thiết bị). */
     @GetMapping("/api/pos/terminals")
+    @SecurityRequirements // không cần token: máy POS chọn quầy trước khi đăng nhập
     public List<TerminalInfo> terminals() {
         return service.activeTerminals();
     }

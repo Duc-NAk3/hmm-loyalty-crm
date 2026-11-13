@@ -2,6 +2,7 @@ package vn.sofitech.hmm.admin.controller;
 
 import vn.sofitech.hmm.admin.dto.auth.LoginRequestDto;
 import vn.sofitech.hmm.admin.dto.auth.LoginResponseDto;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -21,6 +22,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
+    @SecurityRequirements // không cần token
     public LoginResponseDto login(@Valid @RequestBody LoginRequestDto req) {
         return auth.login(req);
     }
