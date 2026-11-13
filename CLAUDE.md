@@ -10,11 +10,27 @@ Không làm: bán khi mất mạng (FR-09), hóa đơn điện tử, voucher, ph
    - Commit cùng code, push `Dev`.
    - Dừng lại báo người dùng trước khi sang bước sau (người dùng muốn làm từng bước).
 3. **Kế hoạch tổng thể đã duyệt:** `C:\Users\DUC\.claude\plans\scalable-foraging-garden.md`. Bộ nhớ dài hạn: `C:\Users\DUC\.claude\projects\D--Job-SofiTech\memory\`.
-4. **Tài liệu nghiệp vụ** (SRS, ERD, Architecture) và quy ước viết tài liệu Word: xem `../CLAUDE.md` ở gốc thư mục bài.
+4. **Tài liệu nghiệp vụ** (SRS, ERD, Architecture, Đặc tả API) và quy ước viết tài liệu Word: xem `../CLAUDE.md` ở gốc thư mục bài.
+5. **Trạng thái hiện tại:** B1–B10 ✅; **B11 Docker là bước tiếp theo** (máy người dùng chưa cài Docker, chỉ viết file, chưa chạy thử được); B12 sau demo (merge `main` khi được duyệt, tài liệu Word còn lại).
+6. **Mẫu kiến trúc dùng lại cho project khác:** `D:\Job\SofiTech\CLAUDE_Template\CLAUDE.md` (bản tổng quát hóa từ repo này). Đổi quy ước kiến trúc ở đây thì cập nhật cả file mẫu.
+
+## Tài liệu trong repo
+| File | Nội dung |
+|---|---|
+| `README.md` | Cài đặt, chạy, tài khoản demo, cấu trúc thư mục (đã thử trên CSDL trống) |
+| `docs/KICH_BAN_DEMO.md` | Kịch bản demo ~10 phút, 9 bước, có số liệu mong đợi (+12 điểm khách mới; báo giá 545 điểm trên 109.000đ; hóa đơn 181.000đ −200/+16; nhập CSV 40/32/3/5) |
+| `docs/HUONG_DAN_RUN_DEBUG.md` | Run & Debug bằng VS Code, mục 5 thử API bằng Swagger, mục 6 lỗi thường gặp |
+| `docs/HUONG_DAN_TEST_POS.txt` | 3 thu ngân, 20 mặt hàng, 10 lượt thanh toán có tổng tiền mong đợi; luồng code Controller → Facade/Service → Repository → Entity |
+| `sample-data/README.md` | 3 file CSV của 3 POS cũ (định dạng cột khác nhau, có dòng lỗi, SĐT trùng) + `products_import.csv` |
+| `tasks/` | Mỗi bước một file `Bxx-*.md` (phạm vi, API, file cần sửa, cách kiểm tra) |
+
+Sửa API (đường dẫn, trường, mã lỗi) thì báo người dùng là tài liệu Word Đặc tả API (`../03_Diagrams/...API_Specification...docx`, API-01–52) cần cập nhật theo.
 
 ## Lưu ý môi trường (Windows)
 - **Run & Debug cho người dùng:** `docs/HUONG_DAN_RUN_DEBUG.md`; cấu hình VS Code trong `.vscode/` (launch.json, tasks.json, extensions.json – đã đưa lên git). Người dùng debug bằng IDE thì backend của Claude phải tắt để nhả cổng 8080.
-- **IDE của người dùng cũng ghi vào `backend/target/`** (trình biên dịch Eclipse): trước khi kết luận build/test, chạy `mvnw clean …` để không dùng nhầm file `.class` cũ.
+- **IDE của người dùng là VS Code** (Extension Pack for Java, biên dịch bằng Eclipse JDT) và **cũng ghi vào `backend/target/`**: trước khi kết luận build/test, chạy `mvnw clean …` để không dùng nhầm file `.class` cũ. `clean` khi backend đang chạy sẽ làm backend chết: dừng preview trước.
+- **File do người dùng/công cụ sinh ra thay đổi** (`package-lock.json`, file IDE): xem diff, nếu vô hại thì commit riêng trên `Dev` (người dùng đã đồng ý), không bỏ qua mãi.
+- **Kiểm tra refactor:** chụp JSON của các API chính trước và sau (đăng nhập, tra cứu thành viên, báo giá, dashboard, Customer 360…), so sánh phải giống nhau (chỉ khác `lastLoginAt`), cộng `mvnw clean test`.
 - **Ghi file:** dùng công cụ Write/Edit. Heredoc nhiều file trong Bash hay bị lỗi; muốn sửa hàng loạt thì viết script `node -e`.
 - **Server để thử:**
   - Dùng preview `backend` (cổng 8080) và `frontend` (cổng 5173), cấu hình trong `D:\Job\SofiTech\.claude\launch.json` (đặt `autoPort: false`).
@@ -30,8 +46,13 @@ Không làm: bán khi mất mạng (FR-09), hóa đơn điện tử, voucher, ph
 - Kế hoạch các bước B1–B11 nằm trong `C:\Users\DUC\.claude\plans\scalable-foraging-garden.md`.
 
 ## Lệnh (Windows; chạy trong `backend/`)
-- Chạy: `.\mvnw.cmd spring-boot:run` → http://localhost:8080. Swagger ở `/swagger-ui.html`.
-- Test: `.\mvnw.cmd test`.
+- Chạy: `.\mvnw.cmd spring-boot:run` → http://localhost:8080.
+- **Swagger** `/swagger-ui.html` (OpenAPI JSON ở `/v3/api-docs`):
+  - `admin/config/OpenApiConfig` khai báo scheme `bearerAuth` (HTTP bearer JWT) áp cho mọi API, nên có nút **Authorize**.
+  - API không cần token (`POST /api/auth/login`, `GET /api/pos/terminals`) đánh dấu `@SecurityRequirements` rỗng.
+  - `springdoc.swagger-ui.persist-authorization: true` giữ token khi tải lại trang; tag và operation sắp xếp theo alpha.
+  - Cách thử: gọi login → copy `token` → Authorize → dán token (không gõ chữ `Bearer`).
+- Test: `.\mvnw.cmd clean test` (36 test): `PointCalculatorTest` 6, `TextsTest` 16, `ModularityTest` 1, `LoyaltyIntegrationTest` 7, `RepositoryQueryTest` 3, `SearchFilterTest` 3.
   - Test tích hợp kế thừa `PostgresTestBase` và dùng database `hmm_loyalty_test`, tự tạo lại mỗi lần chạy.
   - Máy không kết nối được PostgreSQL thì nhóm test này tự bỏ qua.
 - Mật khẩu PostgreSQL nằm trong `backend/local.properties` (`DB_PASSWORD=...`, đã gitignore). Không in mật khẩu ra màn hình.
@@ -77,11 +98,17 @@ Không làm: bán khi mất mạng (FR-09), hóa đơn điện tử, voucher, ph
   - Thời gian chạy khoảng 20 giây.
 - **Bảo mật:** JWT HS256 (oauth2 resource server); claim `uid`, `role`, `storeId`.
   - 6 vai trò: ADMIN, STORE_MANAGER, CASHIER, CSKH, MARKETING, CATALOG.
-  - `/api/pos/**` cho thu ngân; `/api/portal/**` cho các vai trò trung tâm.
-  - Thu ngân chỉ đăng nhập kèm `terminalCode`.
+  - Phân quyền mức URL ở `admin/config/SecurityConfig`: `/api/pos/**` cho CASHIER, STORE_MANAGER; `/api/portal/users/**`, `/api/portal/migration/**` chỉ ADMIN; `/api/portal/**` cho các vai trò trung tâm. Mức hàm dùng `@PreAuthorize` (ví dụ sửa mặt hàng/giá chỉ CATALOG, ADMIN).
+  - Thu ngân chỉ đăng nhập kèm `terminalCode`; thu ngân đăng nhập Portal bị từ chối.
+  - Controller đọc người dùng bằng `CurrentUser.of(jwt)`; `scopeStore(...)` ép quản lý cửa hàng chỉ xem cửa hàng mình.
+  - 401 và 403 mức URL không có body; 403 mức hàm trả JSON `FORBIDDEN`.
 - **OTP:** qua `OtpStore` – chạy local thì lưu trong bộ nhớ; profile `docker` thì lưu Redis.
 - **SMS:** ghi vào `shared.outbox_messages`; tác vụ nền đánh dấu SENT.
-- **Lỗi nghiệp vụ:** `ApiException` với thông báo tiếng Việt.
+- **Tác vụ định kỳ** (`@EnableScheduling`): hết hạn giữ điểm mỗi 30 giây (`RedemptionService`), xét hạng 2 giờ sáng (`TierService`), gửi outbox SMS mỗi 3 giây (`SmsOutbox`).
+- **Lỗi:** body luôn `{code, message}`, thông báo tiếng Việt (chuỗi chung ở `shared.Texts`).
+  - Nghiệp vụ: ném `ApiException.badRequest/conflict/forbidden(code, msg)` hoặc `ApiException.notFound(msg)` (`NotFoundException`).
+  - `shared.GlobalExceptionHandler` map: `@Valid` sai → 400 `VALIDATION`; JSON sai kiểu → 400 `BAD_REQUEST`; `DataIntegrityViolationException` → 409 `DUPLICATE`; lỗi khóa lạc quan/bi quan → 409 `CONCURRENT_UPDATE`; `AccessDeniedException` → 403 `FORBIDDEN`; còn lại → 500 `ERROR`.
+- **Phân trang:** trả `shared.PageResult<T>` dạng `{total, items}`. `PageResult` và `CurrentUser` còn là record (kiểu hạ tầng, không phải DTO nghiệp vụ).
 
 ## Dữ liệu demo
 - Mật khẩu mọi tài khoản: `Demo@123`.
