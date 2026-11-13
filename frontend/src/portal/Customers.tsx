@@ -100,7 +100,7 @@ export default function Customers() {
           scroll={{ x: 900 }}
           columns={[
             { title: 'Mã', dataIndex: 'memberCode', width: 120 },
-            { title: 'Họ tên', dataIndex: 'fullName' },
+            { title: 'Họ tên', dataIndex: 'fullName', width: 180 },
             { title: 'SĐT', dataIndex: 'phone', width: 120 },
             { title: 'Hạng', dataIndex: 'tierName', width: 110, render: (v, r) => <Tag color={TIER_COLORS[r.tierCode]}>{v}</Tag> },
             {

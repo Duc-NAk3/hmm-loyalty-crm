@@ -4,8 +4,10 @@ import vn.sofitech.hmm.catalog.domain.Product;
 import vn.sofitech.hmm.catalog.domain.ProductBarcode;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -13,7 +15,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-public interface ProductRepository extends JpaRepository<Product, Long> {
+public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpecificationExecutor<Product> {
 
     Optional<Product> findBySku(String sku);
 
@@ -34,18 +36,11 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
             """)
     List<Product> searchActive(@Param("q") String q, Pageable page);
 
-    /** Danh sách mặt hàng trên Portal, lọc theo từ khóa và ngành hàng. */
-    @Query(value = """
-            select p from Product p join fetch p.category c
-            where (:q is null or p.sku = :q or lower(p.name) like lower(concat('%', :q, '%'))
-                   or exists (select 1 from ProductBarcode b where b.product = p and b.barcode = :q))
-              and (:categoryId is null or c.id = :categoryId)
-            """,
-            countQuery = """
-            select count(p) from Product p
-            where (:q is null or p.sku = :q or lower(p.name) like lower(concat('%', :q, '%'))
-                   or exists (select 1 from ProductBarcode b where b.product = p and b.barcode = :q))
-              and (:categoryId is null or p.category.id = :categoryId)
-            """)
-    Page<Product> searchPage(@Param("q") String q, @Param("categoryId") Long categoryId, Pageable page);
+    /**
+     * Danh sách mặt hàng trên Portal: lọc bằng Specification (xem {@link ProductSpecifications}).
+     * Ghi đè hàm có sẵn của {@link JpaSpecificationExecutor} chỉ để nạp kèm ngành hàng trong cùng câu truy vấn.
+     */
+    @Override
+    @EntityGraph(attributePaths = "category")
+    Page<Product> findAll(Specification<Product> spec, Pageable page);
 }

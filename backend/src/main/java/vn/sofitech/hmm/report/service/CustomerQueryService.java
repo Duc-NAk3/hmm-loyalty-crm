@@ -13,6 +13,12 @@ import vn.sofitech.hmm.report.dto.customer.LineRow;
 import vn.sofitech.hmm.report.dto.customer.PhoneView;
 import vn.sofitech.hmm.report.dto.audit.AuditRow;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.Tuple;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.metamodel.EntityType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.sofitech.hmm.customer.CustomerFacade;
@@ -24,7 +30,10 @@ import vn.sofitech.hmm.shared.Texts;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Tìm khách và Customer 360 (FR-22): hồ sơ, hạng và tiến độ lên hạng, số dư và sổ cái điểm, lịch sử giao dịch đến từng
@@ -34,8 +43,6 @@ import java.util.List;
 @Service
 @Transactional(readOnly = true)
 public class CustomerQueryService {
-
-    private static final String NOT_MERGED = "c.status <> vn.sofitech.hmm.customer.domain.Customer.Status.MERGED";
 
     private final EntityManager em;
     private final CustomerFacade customers;
@@ -47,31 +54,68 @@ public class CustomerQueryService {
         this.audit = audit;
     }
 
+    /**
+     * Tìm khách trên Portal bằng Criteria API (JPA): chỉ thêm điều kiện khi người dùng có lọc, nên không có tham số null
+     * và Hibernate luôn biết kiểu dữ liệu (lấy từ field của entity).
+     * Module report không import class entity của module khác (ModularityTest chặn), nên lấy entity theo tên
+     * qua metamodel – giống cách các truy vấn JPQL khác trong module này dùng tên entity.
+     */
     public PageResult<CustomerRow> search(String q, String tier, String status, Long storeId, int page, int size) {
-        String query = Texts.isBlank(q) ? null : q.trim();
-        String phone = query == null ? null : Texts.normalizePhone(query);
-        String search = query == null ? null : Texts.unaccent(query);
-        String where = " where " + NOT_MERGED + """
-                 and (:q is null or c.memberCode = upper(:q) or c.phone = :phone or c.nameSearch like concat('%', :search, '%'))
-                 and (:tier is null or c.tierCode = :tier)
-                 and (:status is null or cast(c.status as String) = :status)
-                 and (:store is null or c.registeredStoreId = :store)
-                """;
-        long total = em.createQuery("select count(c) from Customer c" + where, Long.class)
-                .setParameter("q", query).setParameter("phone", phone).setParameter("search", search).setParameter("tier", tier)
-                .setParameter("status", status).setParameter("store", storeId).getSingleResult();
-        List<CustomerRow> items = em.createQuery("""
-                        select c.id, c.memberCode, c.fullName, c.phone, c.tierCode, tr.name, c.status, c.pointBalance, c.spend12m,
-                               s.storeCode, c.createdAt
-                        from Customer c join Tier tr on tr.code = c.tierCode left join Store s on s.id = c.registeredStoreId
-                        """ + where + " order by c.spend12m desc, c.id", Object[].class)
-                .setParameter("q", query).setParameter("phone", phone).setParameter("search", search).setParameter("tier", tier)
-                .setParameter("status", status).setParameter("store", storeId)
-                .setFirstResult(page * size).setMaxResults(size).getResultList().stream()
-                .map(r -> new CustomerRow((Long) r[0], (String) r[1], (String) r[2], Texts.maskPhone((String) r[3]), (String) r[4],
-                        (String) r[5], String.valueOf(r[6]), (Integer) r[7], (Long) r[8], (String) r[9], (OffsetDateTime) r[10]))
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        EntityType<?> customer = entity("Customer");
+
+        // 1. Đếm tổng số khách khớp bộ lọc (để phân trang)
+        CriteriaQuery<Long> count = cb.createQuery(Long.class);
+        Root<?> counted = count.from(customer);
+        count.select(cb.count(counted)).where(customerFilters(cb, counted, q, tier, status, storeId));
+        long total = em.createQuery(count).getSingleResult();
+
+        // 2. Lấy một trang, sắp theo chi tiêu 12 tháng giảm dần
+        CriteriaQuery<Tuple> select = cb.createTupleQuery();
+        Root<?> c = select.from(customer);
+        select.multiselect(c.get("id"), c.get("memberCode"), c.get("fullName"), c.get("phone"), c.get("tierCode"), c.get("status"),
+                        c.get("pointBalance"), c.get("spend12m"), c.get("registeredStoreId"), c.get("createdAt"))
+                .where(customerFilters(cb, c, q, tier, status, storeId))
+                .orderBy(cb.desc(c.get("spend12m")), cb.asc(c.get("id")));
+        List<Tuple> rows = em.createQuery(select).setFirstResult(page * size).setMaxResults(size).getResultList();
+
+        // 3. Tên hạng (4 dòng) và mã cửa hàng (3 dòng) đọc một lần rồi ghép trong Java
+        Map<String, String> tierNames = em.createQuery("select t.code, t.name from Tier t", Object[].class).getResultList()
+                .stream().collect(Collectors.toMap(r -> (String) r[0], r -> (String) r[1]));
+        Map<Long, String> storeCodes = em.createQuery("select s.id, s.storeCode from Store s", Object[].class).getResultList()
+                .stream().collect(Collectors.toMap(r -> (Long) r[0], r -> (String) r[1]));
+
+        List<CustomerRow> items = rows.stream().map(r -> new CustomerRow(
+                r.get(0, Long.class), r.get(1, String.class), r.get(2, String.class), Texts.maskPhone(r.get(3, String.class)),
+                r.get(4, String.class), tierNames.get(r.get(4, String.class)), String.valueOf(r.get(5)),
+                r.get(6, Integer.class), r.get(7, Long.class), storeCodes.get(r.get(8, Long.class)), r.get(9, OffsetDateTime.class)))
                 .toList();
         return new PageResult<>(total, items);
+    }
+
+    /** Điều kiện lọc khách: luôn bỏ hồ sơ đã gộp; các điều kiện khác chỉ thêm khi có giá trị. */
+    private static Predicate[] customerFilters(CriteriaBuilder cb, Root<?> c, String q, String tier, String status, Long storeId) {
+        List<Predicate> where = new ArrayList<>();
+        where.add(cb.notEqual(c.get("status").as(String.class), "MERGED"));
+        if (!Texts.isBlank(q)) {
+            String keyword = q.trim();
+            List<Predicate> anyOf = new ArrayList<>();
+            anyOf.add(cb.equal(c.get("memberCode"), keyword.toUpperCase()));                 // mã thành viên HM…
+            String phone = Texts.normalizePhone(keyword);
+            if (phone != null) anyOf.add(cb.equal(c.get("phone"), phone));                   // SĐT (+84/84/0)
+            anyOf.add(cb.like(c.get("nameSearch"), "%" + Texts.unaccent(keyword) + "%"));   // họ tên không dấu
+            where.add(cb.or(anyOf.toArray(Predicate[]::new)));
+        }
+        if (!Texts.isBlank(tier)) where.add(cb.equal(c.get("tierCode"), tier));
+        if (!Texts.isBlank(status)) where.add(cb.equal(c.get("status").as(String.class), status));
+        if (storeId != null) where.add(cb.equal(c.get("registeredStoreId"), storeId));
+        return where.toArray(Predicate[]::new);
+    }
+
+    /** Kiểu entity theo tên (ví dụ "Customer") trong metamodel của JPA. */
+    private EntityType<?> entity(String name) {
+        return em.getMetamodel().getEntities().stream().filter(e -> e.getName().equals(name)).findFirst()
+                .orElseThrow(() -> new IllegalStateException("Không có entity " + name));
     }
 
     public Customer360View view(long customerId) {

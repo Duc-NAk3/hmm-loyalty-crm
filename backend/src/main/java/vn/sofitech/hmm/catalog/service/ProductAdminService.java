@@ -8,9 +8,11 @@ import vn.sofitech.hmm.catalog.repository.CategoryRepository;
 import vn.sofitech.hmm.catalog.repository.ProductBarcodeRepository;
 import vn.sofitech.hmm.catalog.repository.ProductPriceRepository;
 import vn.sofitech.hmm.catalog.repository.ProductRepository;
+import vn.sofitech.hmm.catalog.repository.ProductSpecifications;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.sofitech.hmm.catalog.domain.*;
@@ -58,8 +60,11 @@ public class ProductAdminService {
 
     @Transactional(readOnly = true)
     public PageResult<ProductView> list(String q, Long categoryId, int page, int size) {
-        String query = Texts.isBlank(q) ? null : q.trim();
-        Page<Product> result = products.searchPage(query, categoryId, PageRequest.of(page, size, Sort.by("sku")));
+        // Chỉ ghép điều kiện người dùng thật sự chọn; không lọc gì thì lấy tất cả
+        List<Specification<Product>> filters = new ArrayList<>();
+        if (!Texts.isBlank(q)) filters.add(ProductSpecifications.keyword(q.trim()));
+        if (categoryId != null) filters.add(ProductSpecifications.inCategory(categoryId));
+        Page<Product> result = products.findAll(Specification.allOf(filters), PageRequest.of(page, size, Sort.by("sku")));
         List<Long> ids = result.getContent().stream().map(Product::getId).toList();
         Map<Long, Long> current = new HashMap<>();
         if (!ids.isEmpty())

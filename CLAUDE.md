@@ -57,6 +57,10 @@ Không làm: bán khi mất mạng (FR-09), hóa đơn điện tử, voucher, ph
   - Cột JSONB map `String` với `@ColumnTransformer(write = "cast(? as jsonb)")`.
   - Module `report` (mô hình đọc) và `TierService.dailyReview` truy vấn bằng JPQL theo tên entity (`EntityManager`); enum trong JPQL viết tên đầy đủ, ví dụ `vn.sofitech.hmm.pos.domain.SalesTransaction.Status.COMPLETED`.
   - Native SQL duy nhất là `nextval('customer.member_code_seq')` để sinh mã thành viên.
+  - **Bộ lọc tùy chọn (trang tìm kiếm): không dùng mẹo `(:x is null or …)` trong JPQL.** Tham số null không rõ kiểu, Hibernate gửi xuống PostgreSQL dạng `bytea` (lỗi `upper(bytea) does not exist`), và lỗi chỉ hiện tùy lần gọi đầu sau khi khởi động vì query plan được cache. Thay vào đó chỉ thêm điều kiện khi có lọc:
+    - Trong module sở hữu entity: **Specification** (`JpaSpecificationExecutor`), ví dụ `catalog/repository/ProductSpecifications` + `Specification.allOf(...)`.
+    - Trong module `report`: **Criteria API** qua `EntityManager`, lấy entity theo tên trong metamodel (không import entity module khác), ví dụ `CustomerQueryService.search`.
+    - Test: `report/SearchFilterTest` (gọi tìm kiếm không có từ khóa đầu tiên).
 - **Observer:** module nghiệp vụ phát `SmsRequestedEvent`; `shared.SmsOutbox` ghi outbox trong cùng giao dịch.
 - **Sổ cái điểm chỉ ghi thêm** (có trigger chặn UPDATE/DELETE). `customers.point_balance` luôn bằng tổng sổ cái.
   - EARN tạo `point_lots`.
