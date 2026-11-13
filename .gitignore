@@ -8,7 +8,11 @@ backend/uploads/
 *.log
 # IDE / OS
 .idea/
-.vscode/
+# VS Code: chỉ đưa lên git cấu hình Run and Debug dùng chung, còn lại là cài đặt cá nhân
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
+!.vscode/extensions.json
 *.iml
 .DS_Store
 Thumbs.db

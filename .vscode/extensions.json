@@ -1,0 +1,7 @@
+{
+  // VS Code gợi ý cài các extension này khi mở thư mục 05_SourceCode.
+  "recommendations": [
+    "vscjava.vscode-java-pack",
+    "vmware.vscode-boot-dev-pack"
+  ]
+}

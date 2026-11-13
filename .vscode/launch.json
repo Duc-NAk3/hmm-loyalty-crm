@@ -1,0 +1,63 @@
+{
+  // Cấu hình "Run and Debug" của VS Code (Ctrl+Shift+D). Mở thư mục 05_SourceCode bằng VS Code để dùng.
+  // Hướng dẫn chi tiết: docs/HUONG_DAN_RUN_DEBUG.md
+  "version": "0.2.0",
+  "configurations": [
+    {
+      // F5: chạy backend ở chế độ Debug – breakpoint trong code Java sẽ dừng.
+      "name": "Backend: Debug (Spring Boot)",
+      "type": "java",
+      "request": "launch",
+      "mainClass": "vn.sofitech.hmm.HmmLoyaltyApplication",
+      "projectName": "hmm-loyalty",
+      // Thư mục chạy phải là backend/ để đọc được file local.properties (mật khẩu PostgreSQL)
+      "cwd": "${workspaceFolder}/backend",
+      "console": "integratedTerminal"
+    },
+    {
+      // Như trên, thêm log câu SQL Hibernate sinh ra và giá trị tham số – dùng khi điều tra lỗi truy vấn.
+      "name": "Backend: Debug + log SQL",
+      "type": "java",
+      "request": "launch",
+      "mainClass": "vn.sofitech.hmm.HmmLoyaltyApplication",
+      "projectName": "hmm-loyalty",
+      "cwd": "${workspaceFolder}/backend",
+      "console": "integratedTerminal",
+      "args": "--logging.level.org.hibernate.SQL=debug --logging.level.org.hibernate.orm.jdbc.bind=trace"
+    },
+    {
+      // Gắn debugger vào backend đang chạy bằng task "Backend: chạy chờ gắn debug (cổng 5005)".
+      "name": "Backend: Gắn debug vào cổng 5005",
+      "type": "java",
+      "request": "attach",
+      "hostName": "localhost",
+      "port": 5005
+    },
+    {
+      // Mở trình duyệt Chrome có gắn debugger: đặt breakpoint ngay trong file .tsx của frontend.
+      // Cần chạy frontend trước (task "Frontend: npm run dev").
+      "name": "Frontend: Debug trên Chrome",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/frontend"
+    },
+    {
+      // Giống trên nhưng dùng Microsoft Edge (có sẵn trên Windows).
+      "name": "Frontend: Debug trên Edge",
+      "type": "msedge",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/frontend"
+    }
+  ],
+  "compounds": [
+    {
+      // Chạy cả hai cùng lúc: backend Debug + frontend dev server, rồi mở Chrome có debugger.
+      "name": "Cả hệ thống: Backend + Frontend",
+      "configurations": ["Backend: Debug (Spring Boot)", "Frontend: Debug trên Chrome"],
+      "preLaunchTask": "Frontend: npm run dev",
+      "stopAll": true
+    }
+  ]
+}

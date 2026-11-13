@@ -13,6 +13,8 @@ Không làm: bán khi mất mạng (FR-09), hóa đơn điện tử, voucher, ph
 4. **Tài liệu nghiệp vụ** (SRS, ERD, Architecture) và quy ước viết tài liệu Word: xem `../CLAUDE.md` ở gốc thư mục bài.
 
 ## Lưu ý môi trường (Windows)
+- **Run & Debug cho người dùng:** `docs/HUONG_DAN_RUN_DEBUG.md`; cấu hình VS Code trong `.vscode/` (launch.json, tasks.json, extensions.json – đã đưa lên git). Người dùng debug bằng IDE thì backend của Claude phải tắt để nhả cổng 8080.
+- **IDE của người dùng cũng ghi vào `backend/target/`** (trình biên dịch Eclipse): trước khi kết luận build/test, chạy `mvnw clean …` để không dùng nhầm file `.class` cũ.
 - **Ghi file:** dùng công cụ Write/Edit. Heredoc nhiều file trong Bash hay bị lỗi; muốn sửa hàng loạt thì viết script `node -e`.
 - **Server để thử:**
   - Dùng preview `backend` (cổng 8080) và `frontend` (cổng 5173), cấu hình trong `D:\Job\SofiTech\.claude\launch.json` (đặt `autoPort: false`).
@@ -41,7 +43,8 @@ Không làm: bán khi mất mạng (FR-09), hóa đơn điện tử, voucher, ph
 ## Backend (`backend/`, Spring Boot 4.0.9, Java 21)
 - **Module dưới `vn.sofitech.hmm`:** `shared`, `admin`, `catalog`, `customer`, `loyalty`, `pos`, `report`, `migration`, `demo`.
 - **Cấu trúc trong mỗi module (layered + Facade):**
-  - Gốc package: `<Module>Facade` (interface) và các record DTO dùng chung giữa module (chưa đổi sang class). Chỉ phần này được module khác gọi.
+  - Gốc package: `<Module>Facade` (interface, chỉ khai báo hàm). Module khác chỉ được gọi qua đây.
+  - `api/`: DTO dùng chung giữa các module (dữ liệu đi qua Facade), mỗi class một file, Lombok `@Value` (không setter). `api/package-info.java` có `@NamedInterface("api")` (thư viện `spring-modulith-api`) để Modulith cho phép module khác dùng; thiếu annotation này `ModularityTest` báo "non-exposed type". Ví dụ `customer/api/CustomerInfo`, `loyalty/api/EarnResult`.
   - `web/`: `@RestController`. Entity không bao giờ trả ra API.
   - `dto/<chức năng>/`: DTO của API, **mỗi DTO một class** (không dùng record), Lombok `@Getter @Setter @NoArgsConstructor @AllArgsConstructor`; field theo đúng tên JSON (camelCase), annotation kiểm tra (`@NotBlank`…) đặt trên field. Ví dụ `loyalty/dto/member/RegisterMemberRequest`, `loyalty/dto/tier/TierView`, `pos/dto/sale/SaleRequest`. Đọc giá trị bằng getter (`req.getPhone()`, boolean là `isX()`). Package Java viết thường (`customerimport` vì `import` là từ khóa).
   - `service/`: `@Service` nghiệp vụ và `@Transactional`; cài đặt Facade nằm ở đây (ví dụ `LoyaltyFacadeImpl`, `CustomerService implements CustomerFacade`).

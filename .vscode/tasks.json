@@ -1,0 +1,67 @@
+{
+  // Các lệnh hay dùng: Ctrl+Shift+P → "Tasks: Run Task" → chọn tên bên dưới.
+  // Hướng dẫn chi tiết: docs/HUONG_DAN_RUN_DEBUG.md
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Frontend: npm run dev",
+      "type": "shell",
+      "command": "npm run dev",
+      "options": { "cwd": "${workspaceFolder}/frontend" },
+      "isBackground": true,
+      // Báo cho VS Code biết khi nào Vite đã sẵn sàng (để cấu hình compound mở trình duyệt sau đó)
+      "problemMatcher": {
+        "owner": "vite",
+        "pattern": { "regexp": "^__never_match__$" },
+        "background": { "activeBegin": "VITE", "activeEnd": "Local:.*5173" }
+      }
+    },
+    {
+      "label": "Frontend: npm install",
+      "type": "shell",
+      "command": "npm install",
+      "options": { "cwd": "${workspaceFolder}/frontend" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Frontend: build (kiểm tra kiểu TypeScript)",
+      "type": "shell",
+      "command": "npm run build",
+      "options": { "cwd": "${workspaceFolder}/frontend" },
+      "problemMatcher": ["$tsc"]
+    },
+    {
+      "label": "Backend: chạy (không debug)",
+      "type": "shell",
+      "command": ".\\mvnw.cmd spring-boot:run",
+      "options": { "cwd": "${workspaceFolder}/backend" },
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      // Chạy backend bằng Maven và mở cổng 5005 để debugger gắn vào ("Backend: Gắn debug vào cổng 5005")
+      "label": "Backend: chạy chờ gắn debug (cổng 5005)",
+      "type": "shell",
+      "command": ".\\mvnw.cmd spring-boot:run \"-Dspring-boot.run.jvmArguments=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005\"",
+      "options": { "cwd": "${workspaceFolder}/backend" },
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Backend: chạy toàn bộ test",
+      "type": "shell",
+      "command": ".\\mvnw.cmd test",
+      "options": { "cwd": "${workspaceFolder}/backend" },
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      // Xóa thư mục target/ rồi biên dịch lại – dùng khi gặp lỗi "Unresolved compilation problems" hoặc code chạy là bản cũ
+      "label": "Backend: build sạch (clean + compile)",
+      "type": "shell",
+      "command": ".\\mvnw.cmd clean compile",
+      "options": { "cwd": "${workspaceFolder}/backend" },
+      "problemMatcher": []
+    }
+  ]
+}
