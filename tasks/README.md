@@ -20,8 +20,8 @@ Mỗi bước là một file `Bxx-*.md`. Trạng thái ghi ở dòng đầu mỗ
 | [B7](B07-pos-thanh-vien-doi-diem.md) | POS: thành viên, đăng ký, đổi điểm OTP | ✅ | `3035ae3` |
 | [B8](B08-portal-dashboard-360.md) | Portal: Dashboard KPI, khách hàng, Customer 360 | ✅ | `1853564` |
 | [B9](B09-portal-quan-tri.md) | Portal: mặt hàng & giá, chuyển đổi dữ liệu, người dùng, hộp thư SMS, xét hạng | ✅ | `e4a366c` |
-| [B10](B10-readme-kich-ban-demo.md) | README đầy đủ + kịch bản demo ~10 phút | ⬜ **làm tiếp theo** | |
-| [B11](B11-docker.md) | Docker compose + hướng dẫn Docker | ⬜ | |
+| [B10](B10-readme-kich-ban-demo.md) | README đầy đủ + kịch bản demo ~10 phút | ✅ | `66fbe35` |
+| [B11](B11-docker.md) | Docker compose + hướng dẫn Docker | ⬜ **làm tiếp theo** | |
 | [Sau demo](B12-sau-demo.md) | Merge `main`, tài liệu Word còn lại (test case, rủi ro, thuyết trình) | ⬜ | |
 
 Các commit lẻ khác: `c32eabc` thêm CLAUDE.md; `bc902a7` tách Repository ra package `repository/`; `bd796e8` sửa lỗi đăng ký thành viên thiếu `marketingConsent`; DTO record → class trong `<module>/dto/<chức năng>/` `b62ee79`; `201e894` sửa lỗi tìm khách upper(bytea) (Criteria API, Specification); `b4e6e8d` record Facade → class `@Value` trong `<module>/api/`; `930cfe8` hướng dẫn và cấu hình Run & Debug; `5b957f1` DTO đuôi `Dto`, `web/` → `controller/`.

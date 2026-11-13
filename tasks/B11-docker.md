@@ -1,4 +1,4 @@
-# B11 – Docker · ⬜ Chưa làm
+# B11 – Docker · ⬜ Chưa làm (làm tiếp theo)
 
 Người dùng chưa cài Docker và chưa biết Docker. Họ muốn có hướng dẫn học nhanh, dưới 5 giờ.
 

@@ -1,4 +1,4 @@
-# B10 – README và kịch bản demo · ✅ Xong (commit `__HASH__`)
+# B10 – README và kịch bản demo · ✅ Xong (commit `66fbe35`)
 
 ## Đã làm
 1. **`README.md`** viết lại đầy đủ:
