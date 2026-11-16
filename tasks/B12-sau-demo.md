@@ -1,7 +1,7 @@
 # Sau demo · ⬜ Chưa làm
 
 1. **Merge `Dev` vào `main`:** chỉ làm khi người dùng duyệt. Hỏi trước, không tự merge.
-2. **Tài liệu Word còn lại** (người dùng nói "làm sau demo"), trong thư mục gốc của bài:
+2. **Tài liệu Word còn lại** (người dùng nói "làm sau demo"), trong thư mục gốc của bài. Đã xong ngoài danh sách này (13/11/2026): Đặc tả API và Sơ đồ luồng dữ liệu, cả hai ở `03_Diagrams` (chi tiết trong `../../CLAUDE.md`). Còn:
    - `04_Wireframe` (có thể chụp màn hình demo);
    - `06_TestCase` (dựa trên các test và kịch bản demo);
    - `07_RiskAssumption_DecisionLog`;
