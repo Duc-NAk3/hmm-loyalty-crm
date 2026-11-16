@@ -72,6 +72,7 @@ Sửa API (đường dẫn, trường, mã lỗi) thì báo người dùng là t
   - `domain/`: `@Entity` (Lombok `@Getter`, rich domain method) và enum trạng thái.
   - `repository/`: interface Spring Data JPA (`extends JpaRepository<Entity, Long>`) – truy vấn theo tên hàm, `@Query` JPQL, `@Lock`.
   - `ModularityTest` (Spring Modulith) báo lỗi khi gọi vào `controller/`, `service/`, `domain/`, `repository/` của module khác hoặc khi có phụ thuộc vòng. Package `demo` được loại khỏi kiểm tra này.
+  - Extension Spring Boot Tools của VS Code không biết ngoại lệ đó nên báo `MODULITH_TYPE_REF_VIOLATION` ở `DemoDataSeeder`; `.vscode/settings.json` hạ mức báo này xuống WARNING cho cả workspace (người dùng chọn 16/11/2026). Không mở phần nội bộ module (`OPEN`, named interface) để tắt báo.
 - **ORM:** Spring Data JPA (Hibernate 7), `ddl-auto=validate`.
   - Schema chỉ quản lý bằng Flyway (`db/migration`); V2 đổi bước nhảy sequence thành 50, dùng `@SequenceGenerator(allocationSize = 50)` với optimizer `pooled-lo`.
   - Tên bảng số nhiều, đúng như ERD.

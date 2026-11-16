@@ -1,0 +1,6 @@
+{
+  // Spring Boot Tools coi package demo là một module và báo đỏ khi DemoDataSeeder dùng phần nội bộ của module khác.
+  // Seeder được miễn có chủ đích (ModularityTest bỏ qua package demo), nên chỉ hạ mức báo xuống cảnh báo vàng.
+  // Vi phạm ranh giới ở module thật vẫn làm ModularityTest (mvnw test) thất bại.
+  "spring-boot.ls.problem.boot3.MODULITH_TYPE_REF_VIOLATION": "WARNING"
+}
