@@ -53,6 +53,7 @@ Sửa API (đường dẫn, trường, mã lỗi) thì báo người dùng là t
 - CSDL trong Docker tách khỏi `hmm_loyalty` local; lần đầu backend tự sinh dữ liệu mẫu. Tạo lại: `docker compose down -v` rồi `up -d`. **`down -v` xóa dữ liệu của người dùng – hỏi trước; muốn thử từ đầu thì dùng project riêng `-p <tên>`.**
 - `.dockerignore`: backend bỏ `target`, `local.properties`; frontend bỏ `node_modules`, `dist` (thiếu thì gửi 226 MB và node_modules Windows đè bản Linux).
 - Docker 29.9 đã cài trên máy người dùng (16/11/2026).
+- **Image public trên Docker Hub** (tài khoản `ducnak3`, người dùng tự `docker login`): `ducnak3/hmm-backend:1.0`, `ducnak3/hmm-frontend:1.0` (+ `latest`), chỉ build cho linux/amd64 (người dùng chọn). Bản compose gửi leader review (dùng `image:`) và `Readme.txt` hướng dẫn người nhận nằm ở `../05_Public_Source_Code/` (ngoài repo, người dùng tự chuyển ra đó); đã thử tải từ Hub vào thư mục trống và chạy được. Sửa code thì build lại, tag phiên bản mới, push (hỏi người dùng trước khi push image).
 
 ## Lệnh (Windows; chạy trong `backend/`)
 - Chạy: `.\mvnw.cmd spring-boot:run` → http://localhost:8080.

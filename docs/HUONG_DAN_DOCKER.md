@@ -124,6 +124,15 @@ Người nhận **chỉ cần cài Docker Desktop**. Dữ liệu demo không đ�
 | **Registry** (Docker Hub, ghcr.io) | `docker tag` + `docker push` image backend, frontend; gửi bản `docker-compose.yml` dùng `image:` thay cho `build:` | Đặt file compose vào một thư mục bất kỳ, `docker compose up -d` (image private thì `docker login` trước) |
 | **File image** | `docker save -o hmm-images.tar 05_sourcecode-backend 05_sourcecode-frontend`, gửi kèm compose dùng `image:` | `docker load -i hmm-images.tar`, rồi `docker compose up -d` |
 
+**Image đã public trên Docker Hub (16/11/2026):** `ducnak3/hmm-backend:1.0`, `ducnak3/hmm-frontend:1.0` (kèm tag `latest`). File compose cho người nhận **`docker-compose.yml`** được Developer DucNA gửi riêng (dùng `image:`, có hướng dẫn ở đầu file): người nhận đặt file vào một thư mục trống rồi chạy `docker compose up -d`. Khi sửa code, build lại rồi đẩy bản mới:
+```bash
+docker compose build
+```
+```bash
+docker tag 05_sourcecode-backend ducnak3/hmm-backend:1.1 && docker push ducnak3/hmm-backend:1.1
+```
+(tương tự cho frontend), rồi đổi số phiên bản trong file compose gửi người nhận.
+
 Image chỉ chứa file `.jar` và file web đã build, không chứa mã nguồn hay `local.properties`. Mật khẩu `postgres` trong compose chỉ dùng cho demo; khi triển khai thật cần đưa mật khẩu, `JWT_SECRET` ra file `.env` (không đưa lên git).
 
 ## 8. Lỗi thường gặp
