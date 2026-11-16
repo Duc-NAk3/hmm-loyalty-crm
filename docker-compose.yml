@@ -1,0 +1,43 @@
+# Chạy toàn bộ hệ thống: docker compose up -d --build  →  http://localhost:3000 (Swagger: http://localhost:8081/swagger-ui.html)
+# Hướng dẫn chi tiết: docs/HUONG_DAN_DOCKER.md
+services:
+  postgres:
+    image: postgres:17
+    environment: { POSTGRES_DB: hmm_loyalty, POSTGRES_PASSWORD: postgres }
+    volumes: [ pgdata:/var/lib/postgresql/data ] # dữ liệu không mất khi xóa container
+    healthcheck: # "khỏe" khi PostgreSQL đã nhận kết nối
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d hmm_loyalty" ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  redis:
+    image: redis:7
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    ports: [ "8081:8080" ] # máy bạn :8081 → container backend :8080 (để mở Swagger)
+    environment:
+      SPRING_PROFILES_ACTIVE: docker # bật OTP lưu Redis
+      DB_HOST: postgres # gọi CSDL bằng tên dịch vụ, không phải localhost
+      DB_PASSWORD: postgres
+    depends_on: # chỉ khởi động backend khi CSDL và Redis đã sẵn sàng
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports: [ "3000:80" ] # mở http://localhost:3000
+    depends_on: [ backend ]
+    restart: unless-stopped
+
+volumes:
+  pgdata:

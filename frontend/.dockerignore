@@ -1,0 +1,6 @@
+# Không gửi các thư mục này vào lúc build image:
+# node_modules được cài lại bằng npm ci bên trong container (bản Linux), dist được build lại
+node_modules
+dist
+.vite
+*.log

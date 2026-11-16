@@ -1,0 +1,5 @@
+# Không gửi các file này vào lúc build image:
+# target được build lại trong container; local.properties chứa mật khẩu CSDL của máy cá nhân
+target
+local.properties
+*.log
