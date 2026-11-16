@@ -12,11 +12,21 @@ Phạm vi: **19 yêu cầu chức năng có đánh dấu Demo** trong tài liệ
 | Tài liệu | Nội dung |
 |---|---|
 | [docs/KICH_BAN_DEMO.md](docs/KICH_BAN_DEMO.md) | Kịch bản trình bày khoảng 10 phút |
+| [docs/HUONG_DAN_DOCKER.md](docs/HUONG_DAN_DOCKER.md) | Chạy cả hệ thống bằng Docker (một lệnh), dùng Docker Desktop, chia sẻ cho người khác |
 | [docs/HUONG_DAN_RUN_DEBUG.md](docs/HUONG_DAN_RUN_DEBUG.md) | Chạy và debug bằng VS Code / IntelliJ, lỗi thường gặp |
 | [docs/HUONG_DAN_TEST_POS.txt](docs/HUONG_DAN_TEST_POS.txt) | 3 thu ngân, 20 mặt hàng, 10 lượt thanh toán tính sẵn, các lượt có thành viên, luồng dữ liệu trong code |
 | [sample-data/README.md](sample-data/README.md) | File CSV "xuất từ POS cũ" để demo chuyển đổi dữ liệu, kết quả mong đợi |
 
 ---
+
+## 0. Chạy nhanh bằng Docker
+
+Chỉ cần cài **Docker Desktop**, không cần Java, Node.js hay PostgreSQL. Trong thư mục này:
+```bash
+docker compose up -d --build
+```
+Chờ log backend có dòng `Demo data seeded` (`docker compose logs -f backend`), rồi mở **http://localhost:3000**. Swagger: http://localhost:8081/swagger-ui.html.
+Chi tiết, lệnh thường dùng và lỗi thường gặp: [docs/HUONG_DAN_DOCKER.md](docs/HUONG_DAN_DOCKER.md). Các mục dưới đây là cách chạy local để phát triển.
 
 ## 1. Yêu cầu cài đặt
 
@@ -184,7 +194,8 @@ Kiểm tra kiểu TypeScript của frontend: `cd frontend` rồi `npm run build`
   backend/            Spring Boot (mvnw, pom.xml, src/main/java/vn/sofitech/hmm/..., db/migration)
   frontend/           React (src/pos – POS, src/portal – Web Portal, src/shared – dùng chung)
   sample-data/        CSV khách hàng của 3 POS cũ + CSV mặt hàng
-  docs/               Kịch bản demo, hướng dẫn Run & Debug, hướng dẫn test POS
+  docs/               Kịch bản demo, hướng dẫn Run & Debug, hướng dẫn Docker, hướng dẫn test POS
   tasks/              Tiến độ các bước làm demo
   .vscode/            Cấu hình Run and Debug cho VS Code
+  docker-compose.yml  Chạy cả hệ thống bằng Docker (backend/Dockerfile, frontend/Dockerfile, frontend/nginx.conf)
 ```

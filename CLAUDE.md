@@ -7,7 +7,7 @@ Không làm: bán khi mất mạng (FR-09), hóa đơn điện tử, voucher, ph
 1. **`tasks/README.md`:** bảng trạng thái các bước B1–B11 (✅ / ⬜), commit tương ứng, nguồn thông tin. Bước ⬜ đầu tiên là việc tiếp theo; file của bước đó có sẵn API backend, file cần sửa và cách kiểm tra.
 2. **Xong một bước:**
    - Đổi trạng thái thành ✅ kèm mã commit trong file bước và trong `tasks/README.md`.
-   - Commit cùng code, push `Dev`.
+   - Hỏi người dùng, được đồng ý thì commit cùng code và push `Dev`.
    - Dừng lại báo người dùng trước khi sang bước sau (người dùng muốn làm từng bước).
 3. **Kế hoạch tổng thể đã duyệt:** `C:\Users\DUC\.claude\plans\scalable-foraging-garden.md`. Bộ nhớ dài hạn: `C:\Users\DUC\.claude\projects\D--Job-SofiTech\memory\`.
 4. **Tài liệu nghiệp vụ** (SRS, ERD, Architecture, Đặc tả API) và quy ước viết tài liệu Word: xem `../CLAUDE.md` ở gốc thư mục bài.
@@ -20,6 +20,7 @@ Không làm: bán khi mất mạng (FR-09), hóa đơn điện tử, voucher, ph
 | `README.md` | Cài đặt, chạy, tài khoản demo, cấu trúc thư mục (đã thử trên CSDL trống) |
 | `docs/KICH_BAN_DEMO.md` | Kịch bản demo ~10 phút, 9 bước, có số liệu mong đợi (+12 điểm khách mới; báo giá 545 điểm trên 109.000đ; hóa đơn 181.000đ −200/+16; nhập CSV 40/32/3/5) |
 | `docs/HUONG_DAN_RUN_DEBUG.md` | Run & Debug bằng VS Code, mục 5 thử API bằng Swagger, mục 6 lỗi thường gặp |
+| `docs/HUONG_DAN_DOCKER.md` | Chạy bằng Docker: khái niệm, lệnh, Docker Desktop, build lại, chia sẻ, lỗi thường gặp |
 | `docs/HUONG_DAN_TEST_POS.txt` | 3 thu ngân, 20 mặt hàng, 10 lượt thanh toán có tổng tiền mong đợi; luồng code Controller → Facade/Service → Repository → Entity |
 | `sample-data/README.md` | 3 file CSV của 3 POS cũ (định dạng cột khác nhau, có dòng lỗi, SĐT trùng) + `products_import.csv` |
 | `tasks/` | Mỗi bước một file `Bxx-*.md` (phạm vi, API, file cần sửa, cách kiểm tra) |
@@ -29,7 +30,7 @@ Sửa API (đường dẫn, trường, mã lỗi) thì báo người dùng là t
 ## Lưu ý môi trường (Windows)
 - **Run & Debug cho người dùng:** `docs/HUONG_DAN_RUN_DEBUG.md`; cấu hình VS Code trong `.vscode/` (launch.json, tasks.json, extensions.json – đã đưa lên git). Người dùng debug bằng IDE thì backend của Claude phải tắt để nhả cổng 8080.
 - **IDE của người dùng là VS Code** (Extension Pack for Java, biên dịch bằng Eclipse JDT) và **cũng ghi vào `backend/target/`**: trước khi kết luận build/test, chạy `mvnw clean …` để không dùng nhầm file `.class` cũ. `clean` khi backend đang chạy sẽ làm backend chết: dừng preview trước.
-- **File do người dùng/công cụ sinh ra thay đổi** (`package-lock.json`, file IDE): xem diff, nếu vô hại thì commit riêng trên `Dev` (người dùng đã đồng ý), không bỏ qua mãi.
+- **File do người dùng/công cụ sinh ra thay đổi** (`package-lock.json`, file IDE): xem diff, nếu vô hại thì đề xuất commit riêng trên `Dev` (vẫn hỏi trước khi commit, push), không bỏ qua mãi.
 - **Kiểm tra refactor:** chụp JSON của các API chính trước và sau (đăng nhập, tra cứu thành viên, báo giá, dashboard, Customer 360…), so sánh phải giống nhau (chỉ khác `lastLoginAt`), cộng `mvnw clean test`.
 - **Ghi file:** dùng công cụ Write/Edit. Heredoc nhiều file trong Bash hay bị lỗi; muốn sửa hàng loạt thì viết script `node -e`.
 - **Server để thử:**
@@ -41,9 +42,17 @@ Sửa API (đường dẫn, trường, mã lỗi) thì báo người dùng là t
 
 ## Git – bắt buộc
 - Remote: GitHub private `Duc-NAk3/hmm-loyalty-crm`. `gh` CLI đã đăng nhập.
-- Làm trên nhánh **`Dev`**. Mỗi bước nhỏ là một commit, push `origin Dev` ngay sau khi kiểm tra xong.
+- Làm trên nhánh **`Dev`**. Mỗi bước nhỏ là một commit trên `Dev`.
+- **Hỏi người dùng trước MỖI lần `git commit` và MỖI lần `git push`, kể cả ở chế độ auto và kể cả commit nhỏ ghi task** (yêu cầu 16/11/2026). Nêu danh sách file và nội dung commit, chờ người dùng đồng ý rồi mới làm; đồng ý commit chưa có nghĩa là đồng ý push.
 - **Không merge hoặc push lên `main` khi người dùng chưa duyệt.**
 - Kế hoạch các bước B1–B11 nằm trong `C:\Users\DUC\.claude\plans\scalable-foraging-garden.md`.
+
+## Docker (B11, chạy trong thư mục gốc `05_SourceCode`)
+- `docker compose up -d --build` → giao diện http://localhost:3000 (nginx chuyển `/api` sang `backend:8080`), Swagger http://localhost:8081/swagger-ui.html.
+- 4 dịch vụ: `postgres:17` (volume `pgdata`, healthcheck `pg_isready`), `redis:7` (healthcheck), `backend` (profile `docker`: OTP lưu Redis, CORS cổng 3000; chờ postgres, redis healthy), `frontend` (nginx, `frontend/nginx.conf`). Tất cả `restart: unless-stopped`.
+- CSDL trong Docker tách khỏi `hmm_loyalty` local; lần đầu backend tự sinh dữ liệu mẫu. Tạo lại: `docker compose down -v` rồi `up -d`. **`down -v` xóa dữ liệu của người dùng – hỏi trước; muốn thử từ đầu thì dùng project riêng `-p <tên>`.**
+- `.dockerignore`: backend bỏ `target`, `local.properties`; frontend bỏ `node_modules`, `dist` (thiếu thì gửi 226 MB và node_modules Windows đè bản Linux).
+- Docker 29.9 đã cài trên máy người dùng (16/11/2026).
 
 ## Lệnh (Windows; chạy trong `backend/`)
 - Chạy: `.\mvnw.cmd spring-boot:run` → http://localhost:8080.
@@ -72,7 +81,7 @@ Sửa API (đường dẫn, trường, mã lỗi) thì báo người dùng là t
   - `domain/`: `@Entity` (Lombok `@Getter`, rich domain method) và enum trạng thái.
   - `repository/`: interface Spring Data JPA (`extends JpaRepository<Entity, Long>`) – truy vấn theo tên hàm, `@Query` JPQL, `@Lock`.
   - `ModularityTest` (Spring Modulith) báo lỗi khi gọi vào `controller/`, `service/`, `domain/`, `repository/` của module khác hoặc khi có phụ thuộc vòng. Package `demo` được loại khỏi kiểm tra này.
-  - Extension Spring Boot Tools của VS Code không biết ngoại lệ đó nên báo `MODULITH_TYPE_REF_VIOLATION` ở `DemoDataSeeder`; `.vscode/settings.json` hạ mức báo này xuống WARNING cho cả workspace (người dùng chọn 16/11/2026). Không mở phần nội bộ module (`OPEN`, named interface) để tắt báo.
+  - Extension Spring Boot Tools của VS Code không biết ngoại lệ đó nên báo `MODULITH_TYPE_REF_VIOLATION` ở `DemoDataSeeder`; `.vscode/settings.json` hạ mức báo này xuống WARNING cho cả workspace (người dùng chọn 16/11/2026). Người dùng thường mở VS Code ở thư mục cha `NguyenAnhDuc_Assignment_Loyalty_CRM`, nên cài đặt được lặp lại ở `../.vscode/settings.json` (ngoài git) – VS Code chỉ đọc `.vscode` của thư mục gốc đang mở. Không mở phần nội bộ module (`OPEN`, named interface) để tắt báo.
 - **ORM:** Spring Data JPA (Hibernate 7), `ddl-auto=validate`.
   - Schema chỉ quản lý bằng Flyway (`db/migration`); V2 đổi bước nhảy sequence thành 50, dùng `@SequenceGenerator(allocationSize = 50)` với optimizer `pooled-lo`.
   - Tên bảng số nhiều, đúng như ERD.
